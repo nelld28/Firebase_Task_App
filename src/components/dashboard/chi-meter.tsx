@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -14,14 +15,23 @@ interface ChiMeterProps {
 const ChiMeter: React.FC<ChiMeterProps> = ({ currentChi, maxChi = 2000, element, userName }) => {
   const progressPercentage = maxChi > 0 ? (currentChi / maxChi) * 100 : 0;
 
-  // Define colors based on element for the progress bar
   const getElementColorClass = (el: ElementType) => {
     switch (el) {
-      case 'air': return 'bg-sky-400'; // Using Tailwind direct color for variety
-      case 'water': return 'bg-blue-500';
-      case 'earth': return 'bg-emerald-500'; // Earth Kingdom Green related
-      case 'fire': return 'bg-red-500'; // Fire Nation Red related
-      default: return 'bg-primary';
+      case 'air': return 'bg-air-secondary-orange'; 
+      case 'water': return 'bg-water-primary'; 
+      case 'earth': return 'bg-earth-primary'; 
+      case 'fire': return 'bg-fire-primary'; 
+      default: return 'bg-primary'; // Fallback to general primary (water-themed)
+    }
+  };
+  
+  const getElementTextColorClass = (el: ElementType) => {
+    switch (el) {
+      case 'air': return 'text-air-secondary-orange';
+      case 'water': return 'text-water-primary';
+      case 'earth': return 'text-earth-primary';
+      case 'fire': return 'text-fire-primary';
+      default: return 'text-primary';
     }
   };
 
@@ -31,10 +41,10 @@ const ChiMeter: React.FC<ChiMeterProps> = ({ currentChi, maxChi = 2000, element,
         <CardTitle className="text-lg font-medium font-headline">
           {userName}'s Chi
         </CardTitle>
-        <ElementIcon element={element} className="h-6 w-6 text-muted-foreground" />
+        <ElementIcon element={element} className={`h-6 w-6 ${getElementTextColorClass(element)}`} />
       </CardHeader>
       <CardContent>
-        <div className="text-4xl font-bold font-headline text-primary">{currentChi} <span className="text-sm font-body text-muted-foreground">XP</span></div>
+        <div className={`text-4xl font-bold font-headline ${getElementTextColorClass(element)}`}>{currentChi} <span className="text-sm font-body text-muted-foreground">XP</span></div>
         <p className="text-xs text-muted-foreground pt-1">
           {progressPercentage.toFixed(0)}% towards weekly goal ({maxChi} XP)
         </p>

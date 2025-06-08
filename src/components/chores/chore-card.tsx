@@ -1,10 +1,11 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import ElementIcon from '@/components/icons/element-icon';
+import ElementIcon, { type ElementType } from '@/components/icons/element-icon';
 import type { Chore, Profile } from '@/lib/mock-data';
 import { CalendarDays, Edit2, Trash2, UserCircle } from 'lucide-react';
 import Image from 'next/image'; // For assignee avatar
@@ -20,6 +21,17 @@ interface ChoreCardProps {
 const ChoreCard: React.FC<ChoreCardProps> = ({ chore, assignee, onToggleComplete, onEdit, onDelete }) => {
   const isOverdue = !chore.isCompleted && new Date(chore.dueDate) < new Date();
 
+  const getElementTextColorClass = (el: ElementType, isCompleted: boolean) => {
+    if (isCompleted) return 'text-muted-foreground';
+    switch (el) {
+      case 'air': return 'text-air-secondary-orange';
+      case 'water': return 'text-water-primary';
+      case 'earth': return 'text-earth-primary';
+      case 'fire': return 'text-fire-primary';
+      default: return 'text-primary'; // Fallback to general primary (water-themed)
+    }
+  };
+
   return (
     <Card className={`shadow-md transition-all duration-300 ease-in-out ${chore.isCompleted ? 'bg-muted/30 opacity-70' : 'bg-card'} ${isOverdue ? 'border-destructive' : ''}`}>
       <CardHeader>
@@ -30,7 +42,7 @@ const ChoreCard: React.FC<ChoreCardProps> = ({ chore, assignee, onToggleComplete
             </CardTitle>
             <CardDescription className="mt-1 text-sm">{chore.description}</CardDescription>
           </div>
-          <ElementIcon element={chore.elementType} className={`h-7 w-7 ${chore.isCompleted ? 'text-muted-foreground' : 'text-primary'}`} />
+          <ElementIcon element={chore.elementType} className={`h-7 w-7 ${getElementTextColorClass(chore.elementType, chore.isCompleted)}`} />
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

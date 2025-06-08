@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,39 +14,47 @@
     --popover: 210 75% 97%;
     --popover-foreground: 215 40% 20%;
 
-    --primary: 207 90% 61%; /* Rich sky blue #42A5F5 */
-    --primary-foreground: 0 0% 100%; /* White for high contrast on primary */
+    /* Elemental & General Purpose Colors */
+    --water-primary: 207 90% 61%; /* Rich sky blue #42A5F5 (Used as general primary) */
+    --water-secondary: 207 80% 85%; /* Lighter shade of primary blue */
+    --primary: var(--water-primary);
+    --primary-foreground: 0 0% 100%; 
 
-    --secondary: 207 80% 85%; /* Lighter shade of primary blue */
+    --secondary: var(--water-secondary);
     --secondary-foreground: 215 40% 20%;
+
+    --fire-primary: 1 79% 52%;   /* Fire Nation Red #E53935 */
+    --fire-secondary: 14 100% 56%; /* Fire Nation Orange #FF5722 */
+    
+    --earth-primary: 122 39% 57%; /* Muted Green #66BB6A */
+    --earth-secondary: 125 39% 44%; /* Earth Kingdom Green #43A047 */
+    --earth-accent-yellow: 50 98% 60%; /* Earth Kingdom Yellow #FDD835 */
+
+    --air-primary-brown: 30 35% 50%;  /* New: Earthy Brown for Air */
+    --air-secondary-orange: 25 95% 55%; /* New: Softer Orange for Air */
+    
+    /* General Accent - can be one of the elemental colors or neutral if preferred */
+    --accent: var(--earth-primary); /* Defaulting accent to Earth's green */
+    --accent-foreground: 0 0% 100%;
 
     --muted: 210 50% 90%; /* Muted light blue */
     --muted-foreground: 215 30% 45%; /* Muted text color */
-
-    --accent: 122 39% 57%; /* Muted green #66BB6A */
-    --accent-foreground: 0 0% 100%; /* White for high contrast on accent */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 207 70% 80%; /* Softer blue border */
     --input: 207 70% 88%; /* Lighter blue for input backgrounds */
-    --ring: 207 90% 61%; /* Primary color for rings */
+    --ring: var(--water-primary); /* Primary color for rings */
 
     --radius: 0.5rem;
-
-    /* Additional Theme Colors */
-    --strong-secondary: 1 79% 52%; /* Fire Nation Red #E53935 */
-    --strong-tertiary: 125 39% 44%; /* Earth Kingdom Green #43A047 */
-    --earth-yellow: 50 98% 60%; /* Earth Kingdom Yellow #FDD835 */
-    --fire-orange: 14 100% 56%; /* Fire Nation Orange #FF5722 */
-
-    /* Chart colors (can be adjusted to fit the theme) */
-    --chart-1: var(--primary);
-    --chart-2: var(--accent);
-    --chart-3: var(--strong-secondary);
-    --chart-4: var(--earth-yellow);
-    --chart-5: var(--fire-orange);
+    
+    /* Chart colors - Themed by element */
+    --chart-1: var(--water-primary);   /* Water */
+    --chart-2: var(--fire-primary);    /* Fire */
+    --chart-3: var(--earth-primary);   /* Earth */
+    --chart-4: var(--air-secondary-orange); /* Air */
+    --chart-5: var(--air-primary-brown);    /* Air (Brown) or another neutral */
     
     /* Sidebar specific theme */
     --sidebar-background: 207 65% 45%; /* A richer, medium-dark blue for sidebar */
@@ -59,7 +68,6 @@
   }
 
   .dark {
-    /* TODO: Define dark theme based on proposal if provided, or create a complementary dark theme */
     --background: 215 40% 10%; 
     --foreground: 210 100% 95%;
 
@@ -69,29 +77,42 @@
     --popover: 215 40% 15%;
     --popover-foreground: 210 100% 95%;
 
-    --primary: 207 90% 61%;
+    --water-primary: 207 90% 61%;
+    --water-secondary: 207 80% 70%;
+    --primary: var(--water-primary);
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 207 80% 70%;
+    --secondary: var(--water-secondary);
     --secondary-foreground: 215 40% 10%;
+
+    --fire-primary: 1 79% 62%;   
+    --fire-secondary: 14 100% 66%; 
+    
+    --earth-primary: 122 39% 67%; 
+    --earth-secondary: 125 39% 54%; 
+    --earth-accent-yellow: 50 98% 70%;
+
+    --air-primary-brown: 30 35% 60%;  
+    --air-secondary-orange: 25 95% 65%; 
+    
+    --accent: var(--earth-primary);
+    --accent-foreground: 0 0% 100%;
 
     --muted: 210 50% 25%;
     --muted-foreground: 210 80% 70%;
-
-    --accent: 122 39% 57%;
-    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 207 50% 30%;
     --input: 207 50% 25%;
-    --ring: 207 90% 61%;
+    --ring: var(--water-primary);
 
-    --strong-secondary: 1 79% 52%;
-    --strong-tertiary: 125 39% 44%;
-    --earth-yellow: 50 98% 60%;
-    --fire-orange: 14 100% 56%;
+    --chart-1: var(--water-primary);
+    --chart-2: var(--fire-primary);
+    --chart-3: var(--earth-primary);
+    --chart-4: var(--air-secondary-orange);
+    --chart-5: var(--air-primary-brown);
 
     --sidebar-background: 215 30% 20%;
     --sidebar-foreground: 210 100% 90%;
