@@ -5,21 +5,23 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import ElementIcon, { type ElementType } from '@/components/icons/element-icon';
-import type { Chore, Profile } from '@/lib/mock-data';
+import ElementIcon from '@/components/icons/element-icon';
+import type { Chore, ElementType } from '@/lib/types'; // Updated import
 import { CalendarDays, Edit2, Trash2, UserCircle } from 'lucide-react';
-import Image from 'next/image'; // For assignee avatar
+import Image from 'next/image';
+import { format } from 'date-fns';
 
 interface ChoreCardProps {
   chore: Chore;
-  assignee?: Profile; // Optional: pass assignee profile for avatar and name
+  // assignee is now part of the chore object if denormalized, or fetched separately
   onToggleComplete: (choreId: string, isCompleted: boolean) => void;
   onEdit: (choreId: string) => void;
   onDelete: (choreId: string) => void;
 }
 
-const ChoreCard: React.FC<ChoreCardProps> = ({ chore, assignee, onToggleComplete, onEdit, onDelete }) => {
-  const isOverdue = !chore.isCompleted && new Date(chore.dueDate) < new Date();
+const ChoreCard: React.FC<ChoreCardProps> = ({ chore, onToggleComplete, onEdit, onDelete }) => {
+  const dueDate = chore.dueDate instanceof Date ? chore.dueDate : new Date(chore.dueDate);
+  const isOverdue = !chore.isCompleted && dueDate < new Date(new Date().setHours(0,0,0,0)); // Compare date part only
 
   const getElementTextColorClass = (el: ElementType, isCompleted: boolean) => {
     if (isCompleted) return 'text-muted-foreground';
@@ -28,9 +30,13 @@ const ChoreCard: React.FC<ChoreCardProps> = ({ chore, assignee, onToggleComplete
       case 'water': return 'text-water-primary';
       case 'earth': return 'text-earth-primary';
       case 'fire': return 'text-fire-primary';
-      default: return 'text-primary'; // Fallback to general primary (water-themed)
+      default: return 'text-primary';
     }
   };
+  
+  const assigneeName = chore.assigneeName || "N/A";
+  const assigneeAvatar = chore.assigneeAvatarUrl || 'https://placehold.co/24x24.png';
+
 
   return (
     <Card className={`shadow-md transition-all duration-300 ease-in-out ${chore.isCompleted ? 'bg-muted/30 opacity-70' : 'bg-card'} ${isOverdue ? 'border-destructive' : ''}`}>
@@ -51,29 +57,27 @@ const ChoreCard: React.FC<ChoreCardProps> = ({ chore, assignee, onToggleComplete
             <CalendarDays className="h-4 w-4" /> Due Date:
           </span>
           <span className={isOverdue ? 'font-semibold text-destructive' : ''}>
-            {new Date(chore.dueDate).toLocaleDateString()}
+            {format(dueDate, "PPP")}
             {isOverdue && <Badge variant="destructive" className="ml-2">Overdue</Badge>}
           </span>
         </div>
 
-        {assignee && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-muted-foreground flex items-center gap-1.5">
-              <UserCircle className="h-4 w-4" /> Assigned To:
-            </span>
-            <div className="flex items-center gap-2">
-              <Image 
-                src={assignee.avatarUrl || `https://placehold.co/24x24.png`}
-                alt={assignee.name}
-                width={24}
-                height={24}
-                className="rounded-full"
-                data-ai-hint="person avatar"
-              />
-              <span>{assignee.name}</span>
-            </div>
+        <div className="flex items-center justify-between text-sm">
+          <span className="font-medium text-muted-foreground flex items-center gap-1.5">
+            <UserCircle className="h-4 w-4" /> Assigned To:
+          </span>
+          <div className="flex items-center gap-2">
+            <Image
+              src={assigneeAvatar}
+              alt={assigneeName}
+              width={24}
+              height={24}
+              className="rounded-full"
+              data-ai-hint="person avatar"
+            />
+            <span>{assigneeName}</span>
           </div>
-        )}
+        </div>
 
         <div className="flex items-center space-x-2 pt-2">
           <Checkbox

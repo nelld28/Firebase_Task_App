@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,20 +9,21 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import type { Profile } from '@/lib/mock-data';
-import ElementIcon, { type ElementType } from '@/components/icons/element-icon';
+import type { Profile, ElementType } from '@/lib/types'; // Updated import
+import ElementIcon from '@/components/icons/element-icon';
 import { UserPlus, Save } from 'lucide-react';
 
 const profileFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   element: z.enum(['air', 'water', 'earth', 'fire'], { required_error: "Please select an element." }),
-  // avatarUrl: z.string().url({ message: "Please enter a valid URL." }).optional(), // Optional for now
+  avatarUrl: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')), // Allow empty string for optional URL
 });
 
+// This type is for the form's shape. The onSubmit will map this to ProfileInput.
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 interface ProfileFormProps {
-  profile?: Profile | null; // For editing existing profile
+  profile?: Profile | null;
   onSubmit: (values: ProfileFormValues, profileId?: string) => void;
   onClose: () => void;
 }
@@ -32,7 +34,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, onSubmit, onClose })
     defaultValues: {
       name: profile?.name || '',
       element: profile?.element || undefined,
-      // avatarUrl: profile?.avatarUrl || '',
+      avatarUrl: profile?.avatarUrl || '',
     },
   });
 
@@ -93,7 +95,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, onSubmit, onClose })
               </FormItem>
             )}
           />
-          {/* Avatar URL field can be added later if direct image upload isn't implemented
           <FormField
             control={form.control}
             name="avatarUrl"
@@ -101,15 +102,16 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, onSubmit, onClose })
               <FormItem>
                 <FormLabel>Avatar URL (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://example.com/avatar.png" {...field} />
+                  <Input placeholder="https://placehold.co/100x100.png" {...field} />
                 </FormControl>
+                <FormDescription>Leave blank for a default placeholder.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
-          /> */}
+          />
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline">Cancel</Button>
+              <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
             </DialogClose>
             <Button type="submit">
               <Save className="mr-2 h-4 w-4" />

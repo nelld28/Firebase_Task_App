@@ -4,8 +4,8 @@
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import ElementIcon, { type ElementType } from '@/components/icons/element-icon';
-import type { Profile } from '@/lib/mock-data';
+import ElementIcon from '@/components/icons/element-icon';
+import type { Profile, ElementType } from '@/lib/types'; // Updated import
 import { Edit3, TrendingUp, Zap } from 'lucide-react';
 
 interface ProfileCardProps {
@@ -41,7 +41,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEdit }) => {
           borderColor: 'border-fire-primary',
           iconColor: 'text-fire-primary',
         };
-      default: // Fallback to general primary theme (water-themed)
+      default:
         return {
           textColor: 'text-primary',
           borderColor: 'border-primary',
@@ -51,12 +51,14 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEdit }) => {
   };
 
   const { textColor, borderColor, iconColor } = getElementStyling(profile.element);
+  const avatar = profile.avatarUrl || `https://placehold.co/100x100.png?text=${profile.name.substring(0,1)}`;
+
 
   return (
     <Card className="shadow-lg flex flex-col">
       <CardHeader className="items-center text-center">
         <Image
-          src={profile.avatarUrl || `https://placehold.co/120x120.png`}
+          src={avatar}
           alt={`${profile.name}'s avatar`}
           width={100}
           height={100}
@@ -66,7 +68,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEdit }) => {
         <CardTitle className="font-headline text-2xl">{profile.name}</CardTitle>
         <div className={`flex items-center gap-2 ${iconColor}`}>
           <ElementIcon element={profile.element} className="h-5 w-5" />
-          <CardDescription className={`capitalize ${textColor === 'text-primary' || textColor === 'text-water-primary' ? 'text-muted-foreground' : textColor }`}> {/* Muted for water/default, specific for others */}
+          <CardDescription className={`capitalize ${textColor === 'text-primary' || textColor === 'text-water-primary' ? 'text-muted-foreground' : textColor }`}>
              {profile.element} Bender
           </CardDescription>
         </div>
@@ -77,15 +79,14 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEdit }) => {
             <Zap className={`h-5 w-5 ${profile.element === 'earth' ? 'text-earth-accent-yellow' : textColor}`} />
             <span className="font-medium">Chi Energy</span>
           </div>
-          <span className={`font-bold text-lg ${textColor}`}>{profile.chi} XP</span>
+          <span className={`font-bold text-lg ${textColor}`}>{profile.chi || 0} XP</span>
         </div>
         <div className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
           <div className="flex items-center gap-2">
-            {/* Using a general accent color for steps, or could be element specific */}
             <TrendingUp className={`h-5 w-5 ${profile.element === 'earth' ? 'text-earth-primary' : 'text-accent'}`} />
             <span className="font-medium">Steps Today</span>
           </div>
-          <span className={`font-bold text-lg ${textColor}`}>{profile.stepsToday.toLocaleString()}</span>
+          <span className={`font-bold text-lg ${textColor}`}>{(profile.stepsToday || 0).toLocaleString()}</span>
         </div>
       </CardContent>
       <CardFooter>

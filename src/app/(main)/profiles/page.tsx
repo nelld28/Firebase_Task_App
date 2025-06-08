@@ -1,20 +1,43 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ProfileCard from '@/components/profiles/profile-card';
 import ProfileForm from '@/components/profiles/profile-form';
-import type { Profile as ProfileType, ElementType } from '@/lib/mock-data'; // Renamed to avoid conflict
-import { mockProfiles as initialProfiles } from '@/lib/mock-data';
+import type { Profile as ProfileType, ElementType, ProfileInput } from '@/lib/types';
 import { PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { db } from '@/lib/firebase';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { addProfile, updateProfile } from '@/app/actions/profileActions';
 
 export default function ProfilesPage() {
-  const [profiles, setProfiles] = useState<ProfileType[]>(initialProfiles);
+  const [profiles, setProfiles] = useState<ProfileType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<ProfileType | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const q = query(collection(db, 'profiles'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const profilesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        // Ensure timestamps are converted if needed, though Profile type expects them as is for now
+      })) as ProfileType[];
+      setProfiles(profilesData);
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Error fetching profiles: ", error);
+      toast({ title: "Error", description: "Could not load profiles.", variant: "destructive" });
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [toast]);
 
   const handleAddProfile = () => {
     setEditingProfile(null);
@@ -29,49 +52,60 @@ export default function ProfilesPage() {
     }
   };
 
-  const handleSubmitProfileForm = (
-    values: { name: string; element: ElementType }, // Simplified values from form
+  const handleSubmitProfileForm = async (
+    values: { name: string; element: ElementType; avatarUrl?: string }, // Form values
     profileId?: string
   ) => {
-    if (profileId) {
-      // Edit existing profile
-      setProfiles(prevProfiles =>
-        prevProfiles.map(p =>
-          p.id === profileId
-            ? { ...p, name: values.name, element: values.element }
-            : p
-        )
-      );
-      toast({ title: "Profile Updated", description: `${values.name}'s profile has been saved.` });
-    } else {
-      // Add new profile
-      const newProfile: ProfileType = {
-        id: String(Date.now()), // Simple ID generation
+    const profileInput: ProfileInput = { // Map form values to ProfileInput
         name: values.name,
         element: values.element,
-        chi: 0, // Default Chi for new profile
-        stepsToday: 0, // Default steps
-        avatarUrl: `https://placehold.co/120x120.png?text=${values.name.substring(0,1)}`, // Placeholder avatar
-      };
-      setProfiles(prevProfiles => [...prevProfiles, newProfile]);
-      toast({ title: "Profile Created", description: `${values.name} has been added to GetChiDa.` });
+        avatarUrl: values.avatarUrl,
+        // chi and stepsToday will be defaulted in the server action if not provided
+    };
+
+    let result;
+    if (profileId) {
+      result = await updateProfile(profileId, profileInput);
+      if (result.success) {
+        toast({ title: "Profile Updated", description: `${values.name}'s profile has been saved.` });
+      }
+    } else {
+      result = await addProfile(profileInput);
+      if (result.success) {
+        toast({ title: "Profile Created", description: `${values.name} has been added.` });
+      }
     }
-    setIsFormOpen(false);
-    setEditingProfile(null);
+
+    if (result.success) {
+      setIsFormOpen(false);
+      setEditingProfile(null);
+    } else {
+      toast({ title: "Error", description: result.error || "Could not save profile.", variant: "destructive" });
+    }
   };
 
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-8 text-center">
+        <p className="text-xl">Loading profiles...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-bold font-headline">Housemate Profiles</h2>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <Dialog open={isFormOpen} onOpenChange={(isOpen) => {
+          setIsFormOpen(isOpen);
+          if (!isOpen) setEditingProfile(null);
+        }}>
           <DialogTrigger asChild>
             <Button onClick={handleAddProfile}>
               <PlusCircle className="mr-2 h-5 w-5" /> Add New Profile
             </Button>
           </DialogTrigger>
-          {isFormOpen && ( // Conditionally render form to reset state when closed/reopened
+          {isFormOpen && (
             <ProfileForm
               profile={editingProfile}
               onSubmit={handleSubmitProfileForm}
