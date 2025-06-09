@@ -15,7 +15,7 @@ import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { addChore, updateChore, deleteChore as deleteChoreAction, toggleChoreComplete } from '@/app/actions/choreActions';
 import { cn } from '@/lib/utils';
-import { Card as ShadCNCard, CardHeader as ShadCNCardHeader, CardContent as ShadCNCardContent } from '@/components/ui/card'; // Aliased to avoid conflict
+import { Card as ShadCNCard, CardHeader as ShadCNCardHeader, CardContent as ShadCNCardContent } from '@/components/ui/card';
 
 export default function ChoresPage() {
   const [chores, setChores] = useState<ChoreType[]>([]);
@@ -165,169 +165,179 @@ export default function ChoresPage() {
     { value: 'fire', label: 'Fire' },
   ];
 
-  if (isLoading && profiles.length === 0 && activeMainTab === 'tasks') {
+  if (isLoading && profiles.length === 0 && activeMainTab === 'tasks' && !isFormOpen) {
     return <div className="container mx-auto py-8 text-center"><p className="text-xl text-foreground">Loading chores and profiles...</p></div>;
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <Tabs value={activeMainTab} onValueChange={(value) => setActiveMainTab(value as MainTabValue)} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6 bg-secondary rounded-lg p-1">
+    <div className="relative h-full">
+      <Tabs 
+        value={activeMainTab} 
+        onValueChange={(value) => setActiveMainTab(value as MainTabValue)} 
+        className="w-full h-full flex flex-col"
+      >
+        {/* Scrollable Content Area */}
+        <div className="flex-grow overflow-y-auto container mx-auto pt-8 pb-24"> {/* Added padding-bottom for fixed nav */}
+          <TabsContent value="tasks">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+              <h3 className="text-2xl font-semibold font-headline text-foreground">Today's Chores</h3>
+              <div className="flex gap-2 items-center">
+                <Button variant="outline" size="icon" onClick={() => setViewMode('grid')} className={cn(viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-primary')} aria-label="Grid view">
+                  <LayoutGrid className="h-5 w-5" />
+                </Button>
+                <Button variant="outline" size="icon" onClick={() => setViewMode('list')} className={cn(viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'text-primary')} aria-label="List view">
+                  <List className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+
+            <Tabs value={activeElementalTab} onValueChange={(value) => setActiveElementalTab(value as ElementalTabValue)} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 mb-6 bg-secondary/70">
+                {elementalTabsList.map(tab => (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className={cn(
+                      "flex items-center gap-2",
+                      activeElementalTab === tab.value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {tab.value !== 'all' && <ElementIcon element={tab.value as ElementType} className="h-4 w-4" />}
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              {elementalTabsList.map(tab => (
+                <TabsContent key={tab.value} value={tab.value}>
+                  {isLoading && activeMainTab === 'tasks' ? (
+                      <div className="text-center py-12"><p className="text-xl text-foreground">Loading chores...</p></div>
+                  ) : sortedChores.length > 0 ? (
+                    <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
+                      {sortedChores.map(chore => (
+                        <ChoreCard
+                          key={chore.id}
+                          chore={chore}
+                          onToggleComplete={handleToggleComplete}
+                          onEdit={handleEditChore}
+                          onDelete={handleDeleteChore}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-xl text-muted-foreground mb-4">
+                        No {activeElementalTab !== 'all' ? `${activeElementalTab.charAt(0).toUpperCase() + activeElementalTab.slice(1)} ` : ''}
+                        chores found.
+                      </p>
+                      {activeElementalTab === 'all' && profiles.length === 0 && (
+                          <p className="text-sm text-muted-foreground">Tip: Add some housemate profiles before creating chores!</p>
+                      )}
+                    </div>
+                  )}
+                </TabsContent>
+              ))}
+            </Tabs>
+            
+            <div className="mt-8">
+              <Dialog open={isFormOpen} onOpenChange={(isOpen) => {
+                setIsFormOpen(isOpen);
+                if (!isOpen) setEditingChore(null);
+              }}>
+                <DialogTrigger asChild>
+                  <Button
+                    size="lg"
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3 text-base"
+                    onClick={handleAddChore}
+                    disabled={profiles.length === 0 && !isLoading && !isFormOpen}
+                  >
+                    <PlusCircle className="mr-2 h-5 w-5" /> Add New Chore
+                  </Button>
+                </DialogTrigger>
+                {isFormOpen && (
+                  profiles.length > 0 ? (
+                      <ChoreForm
+                        chore={editingChore}
+                        profiles={profiles}
+                        onSubmit={handleSubmitChoreForm}
+                        onClose={() => {
+                          setIsFormOpen(false);
+                          setEditingChore(null);
+                        }}
+                      />
+                    ) : (
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Cannot Add Chore</DialogTitle>
+                          <DialogDescription>
+                            No housemate profiles are available for assignment. Please add at least one profile before creating chores.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                              <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>OK</Button>
+                          </DialogClose>
+                        </DialogFooter>
+                      </DialogContent>
+                    )
+                  )}
+              </Dialog>
+               {profiles.length === 0 && !isLoading && (
+                  <p className="mt-4 text-center text-sm text-muted-foreground">
+                      Please add housemate profiles to assign and create chores.
+                  </p>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="schedule">
+            <ShadCNCard className="mt-6">
+              <ShadCNCardHeader>
+                  <ShadCNCardContent className="pt-6">
+                  <div className="text-center py-12">
+                      <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                      <p className="text-xl text-muted-foreground">Schedule View Coming Soon!</p>
+                      <p className="text-sm text-muted-foreground">Check back later to see your chores on a calendar.</p>
+                  </div>
+                  </ShadCNCardContent>
+              </ShadCNCardHeader>
+            </ShadCNCard>
+          </TabsContent>
+
+          <TabsContent value="family">
+             <ShadCNCard className="mt-6">
+               <ShadCNCardHeader>
+                  <ShadCNCardContent className="pt-6">
+                  <div className="text-center py-12">
+                      <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                      <p className="text-xl text-muted-foreground">Family Overview Coming Soon!</p>
+                      <p className="text-sm text-muted-foreground">Track chore completion and engagement across the household.</p>
+                  </div>
+                  </ShadCNCardContent>
+              </ShadCNCardHeader>
+            </ShadCNCard>
+          </TabsContent>
+        </div>
+
+        {/* Main Navigation TabsList - Fixed at the bottom */}
+        <TabsList className="fixed bottom-0 left-0 right-0 z-10 grid w-full grid-cols-3 h-16 bg-card border-t border-border shadow-[0_-2px_5px_-1px_rgba(0,0,0,0.1),_0_-1px_3px_-1px_rgba(0,0,0,0.06)] p-1">
           {mainTabsConfig.map(tab => (
             <TabsTrigger
               key={tab.value}
               value={tab.value}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 h-auto py-2 px-1 text-xs sm:text-sm",
-                activeMainTab === tab.value ? 'active-tab-indicator' : 'text-muted-foreground hover:text-foreground'
+                "flex flex-col items-center justify-center gap-0.5 h-full text-xs sm:text-sm rounded-none focus-visible:ring-0 focus-visible:ring-offset-0",
+                "data-[state=active]:text-primary data-[state=active]:font-semibold data-[state=active]:bg-transparent",
+                "data-[state=inactive]:text-muted-foreground hover:text-foreground hover:bg-secondary/30"
               )}
             >
-              <tab.icon className="h-5 w-5 mb-0.5" />
+              <tab.icon className="h-5 w-5" />
               {tab.label}
             </TabsTrigger>
           ))}
         </TabsList>
-
-        <TabsContent value="tasks">
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
-            <h3 className="text-2xl font-semibold font-headline text-foreground">Today's Chores</h3>
-            <div className="flex gap-2 items-center">
-              <Button variant="outline" size="icon" onClick={() => setViewMode('grid')} className={cn(viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-primary')} aria-label="Grid view">
-                <LayoutGrid className="h-5 w-5" />
-              </Button>
-              <Button variant="outline" size="icon" onClick={() => setViewMode('list')} className={cn(viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'text-primary')} aria-label="List view">
-                <List className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-
-          <Tabs value={activeElementalTab} onValueChange={(value) => setActiveElementalTab(value as ElementalTabValue)} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 mb-6 bg-secondary/70">
-              {elementalTabsList.map(tab => (
-                <TabsTrigger
-                  key={tab.value}
-                  value={tab.value}
-                  className={cn(
-                    "flex items-center gap-2",
-                    activeElementalTab === tab.value ? 'active-tab-indicator' : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  {tab.value !== 'all' && <ElementIcon element={tab.value as ElementType} className="h-4 w-4" />}
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            {elementalTabsList.map(tab => (
-              <TabsContent key={tab.value} value={tab.value}>
-                {isLoading && activeMainTab === 'tasks' ? (
-                    <div className="text-center py-12"><p className="text-xl text-foreground">Loading chores...</p></div>
-                ) : sortedChores.length > 0 ? (
-                  <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
-                    {sortedChores.map(chore => (
-                      <ChoreCard
-                        key={chore.id}
-                        chore={chore}
-                        onToggleComplete={handleToggleComplete}
-                        onEdit={handleEditChore}
-                        onDelete={handleDeleteChore}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-xl text-muted-foreground mb-4">
-                      No {activeElementalTab !== 'all' ? `${activeElementalTab.charAt(0).toUpperCase() + activeElementalTab.slice(1)} ` : ''}
-                      chores found.
-                    </p>
-                     {activeElementalTab === 'all' && profiles.length === 0 && (
-                        <p className="text-sm text-muted-foreground">Tip: Add some housemate profiles before creating chores!</p>
-                    )}
-                  </div>
-                )}
-              </TabsContent>
-            ))}
-          </Tabs>
-          
-          <div className="mt-8">
-            <Dialog open={isFormOpen} onOpenChange={(isOpen) => {
-              setIsFormOpen(isOpen);
-              if (!isOpen) setEditingChore(null);
-            }}>
-              <DialogTrigger asChild>
-                <Button
-                  size="lg"
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3 text-base"
-                  onClick={handleAddChore}
-                  disabled={profiles.length === 0 && !isLoading}
-                >
-                  <PlusCircle className="mr-2 h-5 w-5" /> Add New Chore
-                </Button>
-              </DialogTrigger>
-              {isFormOpen && (
-                  profiles.length > 0 ? (
-                    <ChoreForm
-                      chore={editingChore}
-                      profiles={profiles}
-                      onSubmit={handleSubmitChoreForm}
-                      onClose={() => {
-                        setIsFormOpen(false);
-                        setEditingChore(null);
-                      }}
-                    />
-                  ) : (
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Cannot Add Chore</DialogTitle>
-                        <DialogDescription>
-                          No housemate profiles are available for assignment. Please add at least one profile before creating chores.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <DialogClose asChild>
-                            <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>OK</Button>
-                        </DialogClose>
-                      </DialogFooter>
-                    </DialogContent>
-                  )
-                )}
-            </Dialog>
-             {profiles.length === 0 && !isLoading && (
-                <p className="mt-4 text-center text-sm text-muted-foreground">
-                    Please add housemate profiles to assign and create chores.
-                </p>
-            )}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="schedule">
-          <ShadCNCard className="mt-6">
-            <ShadCNCardHeader>
-                <ShadCNCardContent className="pt-6">
-                <div className="text-center py-12">
-                    <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <p className="text-xl text-muted-foreground">Schedule View Coming Soon!</p>
-                    <p className="text-sm text-muted-foreground">Check back later to see your chores on a calendar.</p>
-                </div>
-                </ShadCNCardContent>
-            </ShadCNCardHeader>
-          </ShadCNCard>
-        </TabsContent>
-
-        <TabsContent value="family">
-           <ShadCNCard className="mt-6">
-             <ShadCNCardHeader>
-                <ShadCNCardContent className="pt-6">
-                <div className="text-center py-12">
-                    <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <p className="text-xl text-muted-foreground">Family Overview Coming Soon!</p>
-                    <p className="text-sm text-muted-foreground">Track chore completion and engagement across the household.</p>
-                </div>
-                </ShadCNCardContent>
-            </ShadCNCardHeader>
-          </ShadCNCard>
-        </TabsContent>
       </Tabs>
     </div>
   );
 }
+
