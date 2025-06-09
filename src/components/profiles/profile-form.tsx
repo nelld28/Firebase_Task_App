@@ -5,21 +5,20 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import type { Profile, ElementType } from '@/lib/types'; // Updated import
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogDescriptionComponent, DialogFooter, DialogClose } from '@/components/ui/dialog'; // Renamed DialogDescription to avoid conflict
+import type { Profile, ElementType } from '@/lib/types'; 
 import ElementIcon from '@/components/icons/element-icon';
 import { UserPlus, Save } from 'lucide-react';
 
 const profileFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   element: z.enum(['air', 'water', 'earth', 'fire'], { required_error: "Please select an element." }),
-  avatarUrl: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')), // Allow empty string for optional URL
+  avatarUrl: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')), 
 });
 
-// This type is for the form's shape. The onSubmit will map this to ProfileInput.
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 interface ProfileFormProps {
@@ -49,9 +48,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, onSubmit, onClose })
           <UserPlus className="h-6 w-6 text-primary" />
           {profile ? 'Edit Profile' : 'Create New Profile'}
         </DialogTitle>
-        <DialogDescription>
+        <DialogDescriptionComponent>
           {profile ? `Update details for ${profile.name}.` : 'Add a new housemate to GetChiDa.'}
-        </DialogDescription>
+        </DialogDescriptionComponent>
       </DialogHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 py-4">
