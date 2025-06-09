@@ -15,15 +15,14 @@ import AppHeader from './app-header';
 import Link from 'next/link';
 import ElementIcon from '../icons/element-icon';
 import { cn } from '@/lib/utils';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ListChecks, CalendarDays, BarChart3 } from 'lucide-react'; // Specific icons for bottom nav
-import { usePathname } from 'next/navigation';
-import { useIsMobile } from '@/hooks/use-mobile';
+// Removed Tabs, TabsList, TabsTrigger, usePathname, and useIsMobile imports if no longer needed solely for bottom nav.
+// If usePathname or useIsMobile are used for other purposes in this file, they should remain.
+// For this specific request of removing bottom nav, they are assumed not to be needed further here.
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [defaultOpen, setDefaultOpen] = React.useState(true);
-  const pathname = usePathname();
-  const isMobile = useIsMobile();
+  // const pathname = usePathname(); // Keep if used elsewhere, remove if only for bottom nav
+  // const isMobile = useIsMobile(); // Keep if used elsewhere, remove if only for bottom nav
 
   React.useEffect(() => {
     const storedState = document.cookie
@@ -35,14 +34,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   }, []);
 
-  const bottomNavItems = [
-    { href: '/chores', label: 'Tasks', icon: ListChecks }, // Chores page now acts as Tasks
-    { href: '/schedule', label: 'Schedule', icon: CalendarDays },
-    { href: '/xp', label: 'XP', icon: BarChart3 },
-  ];
-
-  // Show bottom nav on mobile for any page using this layout.
-  const showBottomNav = isMobile;
+  // Removed bottomNavItems and showBottomNav logic
 
   return (
     <SidebarProvider defaultOpen={defaultOpen} open={defaultOpen} onOpenChange={setDefaultOpen}>
@@ -69,38 +61,14 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <AppHeader />
         <main className={cn(
           "flex-1 p-4 md:p-6 lg:p-8 overflow-auto",
-          "bg-card rounded-lg shadow-lg m-0 md:m-4",
-          showBottomNav ? "pb-20" : "" // Add padding-bottom if bottom nav is shown
+          "bg-card rounded-lg shadow-lg m-0 md:m-4"
+          // Removed conditional padding: showBottomNav ? "pb-20" : ""
         )}>
           {children}
         </main>
 
-        {/* Global Bottom Navigation */}
-        {showBottomNav && (
-          <div className="fixed bottom-0 left-0 right-0 z-10 md:hidden"> {/* Hidden on md and larger screens */}
-            <Tabs value={pathname} className="w-full"> {/* Use pathname to control active tab */}
-              <TabsList className="grid w-full grid-cols-3 h-16 bg-card border-t border-border shadow-[0_-2px_5px_-1px_rgba(0,0,0,0.1),_0_-1px_3px_-1px_rgba(0,0,0,0.06)] p-1">
-                {bottomNavItems.map(tab => (
-                  <TabsTrigger
-                    key={tab.href}
-                    value={tab.href} // Radix Tabs expects value to match for active state
-                    asChild
-                    className={cn(
-                      "flex flex-col items-center justify-center gap-1 h-full text-xs rounded-none focus-visible:ring-0 focus-visible:ring-offset-0",
-                      "data-[state=active]:text-primary data-[state=active]:font-semibold data-[state=active]:bg-transparent",
-                      "data-[state=inactive]:text-muted-foreground hover:text-foreground hover:bg-secondary/30"
-                    )}
-                  >
-                    <Link href={tab.href}>
-                      <tab.icon className="h-5 w-5" />
-                      {tab.label}
-                    </Link>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          </div>
-        )}
+        {/* Global Bottom Navigation Removed */}
+        
       </SidebarInset>
     </SidebarProvider>
   );
