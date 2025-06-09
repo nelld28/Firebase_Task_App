@@ -8,18 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ChoreCard from '@/components/chores/chore-card';
 import ChoreForm from '@/components/chores/chore-form';
 import type { Chore as ChoreType, ElementType, ChoreInput, Profile as ProfileType } from '@/lib/types';
-import { PlusCircle, LayoutGrid, List, ListChecks, CalendarDays, Users } from 'lucide-react'; // Added new icons
+import { PlusCircle, LayoutGrid, List, ListChecks, CalendarDays, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ElementIcon from '@/components/icons/element-icon';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { addChore, updateChore, deleteChore as deleteChoreAction, toggleChoreComplete } from '@/app/actions/choreActions';
 import { cn } from '@/lib/utils';
-import { Card } from '@/components/ui/card';
-
-type ViewMode = 'grid' | 'list';
-type MainTabValue = 'tasks' | 'schedule' | 'family';
-type ElementalTabValue = ElementType | 'all';
+import { Card, CardHeader as ShadCNCardHeader, CardContent as ShadCNCardContent } from '@/components/ui/card'; // Aliased to avoid conflict
 
 export default function ChoresPage() {
   const [chores, setChores] = useState<ChoreType[]>([]);
@@ -27,10 +23,10 @@ export default function ChoresPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingChore, setEditingChore] = useState<ChoreType | null>(null);
-  
-  const [activeMainTab, setActiveMainTab] = useState<MainTabValue>('tasks');
-  const [activeElementalTab, setActiveElementalTab] = useState<ElementalTabValue>('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+
+  const [activeMainTab, setActiveMainTab] = useState<string>('tasks');
+  const [activeElementalTab, setActiveElementalTab] = useState<ElementType | 'all'>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -158,6 +154,8 @@ export default function ChoresPage() {
     { value: 'family', label: 'Family', icon: Users },
   ];
 
+  type MainTabValue = 'tasks' | 'schedule' | 'family';
+
   const elementalTabsList: { value: ElementalTabValue; label: string }[] = [
     { value: 'all', label: 'All Chores' },
     { value: 'air', label: 'Air' },
@@ -169,18 +167,18 @@ export default function ChoresPage() {
   if (isLoading && profiles.length === 0 && activeMainTab === 'tasks') {
     return <div className="container mx-auto py-8 text-center"><p className="text-xl text-foreground">Loading chores and profiles...</p></div>;
   }
-  
+
   return (
     <div className="container mx-auto py-8">
       <Tabs value={activeMainTab} onValueChange={(value) => setActiveMainTab(value as MainTabValue)} className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-6 bg-secondary rounded-lg p-1">
           {mainTabsConfig.map(tab => (
-            <TabsTrigger 
-              key={tab.value} 
-              value={tab.value} 
+            <TabsTrigger
+              key={tab.value}
+              value={tab.value}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 h-auto py-2 px-1 text-xs sm:text-sm",
-                activeMainTab === tab.value ? 'active-tab-indicator' : 'text-muted-foreground hover:text-foreground' 
+                activeMainTab === tab.value ? 'active-tab-indicator' : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <tab.icon className="h-5 w-5 mb-0.5" />
@@ -205,12 +203,12 @@ export default function ChoresPage() {
           <Tabs value={activeElementalTab} onValueChange={(value) => setActiveElementalTab(value as ElementalTabValue)} className="w-full">
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 mb-6 bg-secondary/70">
               {elementalTabsList.map(tab => (
-                <TabsTrigger 
-                  key={tab.value} 
-                  value={tab.value} 
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
                   className={cn(
                     "flex items-center gap-2",
-                    activeElementalTab === tab.value ? 'active-tab-indicator' : 'text-muted-foreground hover:text-foreground' 
+                    activeElementalTab === tab.value ? 'active-tab-indicator' : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
                   {tab.value !== 'all' && <ElementIcon element={tab.value as ElementType} className="h-4 w-4" />}
@@ -253,27 +251,27 @@ export default function ChoresPage() {
               if (!isOpen) setEditingChore(null);
             }}>
               <DialogTrigger asChild>
-                <Button 
-                  size="lg" 
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3 text-base" 
-                  onClick={handleAddChore} 
+                <Button
+                  size="lg"
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3 text-base"
+                  onClick={handleAddChore}
                   disabled={profiles.length === 0 && !isLoading}
                 >
                   <PlusCircle className="mr-2 h-5 w-5" /> Add New Chore
                 </Button>
               </DialogTrigger>
-              {isFormOpen && profiles.length > 0 && (
-                <ChoreForm
-                  chore={editingChore}
-                  profiles={profiles}
-                  onSubmit={handleSubmitChoreForm}
-                  onClose={() => {
-                    setIsFormOpen(false);
-                    setEditingChore(null);
-                  }}
-                />
-              )}
-              {isFormOpen && profiles.length === 0 && !isLoading && (
+              {isFormOpen && ( // Conditionally render form or message
+                profiles.length > 0 ? (
+                  <ChoreForm
+                    chore={editingChore}
+                    profiles={profiles}
+                    onSubmit={handleSubmitChoreForm}
+                    onClose={() => {
+                      setIsFormOpen(false);
+                      setEditingChore(null);
+                    }}
+                  />
+                ) : (
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Cannot Add Chore</DialogTitle>
@@ -287,36 +285,36 @@ export default function ChoresPage() {
                       </DialogClose>
                     </DialogFooter>
                   </DialogContent>
+                )
               )}
             </Dialog>
           </div>
         </TabsContent>
 
         <TabsContent value="schedule">
-          <Card className="mt-6">
-            <CardContent className="pt-6">
+          <ShadCNCard className="mt-6">
+            <ShadCNCardContent className="pt-6">
               <div className="text-center py-12">
                 <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-xl text-muted-foreground">Schedule View Coming Soon!</p>
                 <p className="text-sm text-muted-foreground">Check back later to see your chores on a calendar.</p>
               </div>
-            </CardContent>
-          </Card>
+            </ShadCNCardContent>
+          </ShadCNCard>
         </TabsContent>
 
         <TabsContent value="family">
-           <Card className="mt-6">
-            <CardContent className="pt-6">
+           <ShadCNCard className="mt-6">
+            <ShadCNCardContent className="pt-6">
               <div className="text-center py-12">
                 <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-xl text-muted-foreground">Family Overview Coming Soon!</p>
                 <p className="text-sm text-muted-foreground">Track chore completion and engagement across the household.</p>
               </div>
-            </CardContent>
-          </Card>
+            </ShadCNCardContent>
+          </ShadCNCard>
         </TabsContent>
       </Tabs>
     </div>
   );
 }
-טרקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקק।
