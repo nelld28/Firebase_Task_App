@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, type FormEvent } from 'react';
@@ -15,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import ElementIcon, { type ElementType } from '@/components/icons/element-icon';
 import { generateMotivationalMessage, type MotivationalMessageInput } from '@/ai/flows/motivational-bending-bot';
 import { Loader2, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   element: z.enum(['air', 'water', 'earth', 'fire'], {
@@ -63,13 +65,16 @@ export default function BotForm() {
   }
 
   return (
-    <Card className="w-full max-w-lg shadow-xl">
+    <Card className={cn(
+      "w-full max-w-lg shadow-xl",
+      "bg-card-item text-card-item-foreground border-border" // Use new very light cream and brown border
+    )}>
       <CardHeader>
-        <CardTitle className="font-headline text-2xl flex items-center gap-2">
-          <Sparkles className="h-6 w-6 text-primary" />
+        <CardTitle className="font-headline text-2xl flex items-center gap-2 text-foreground">
+          <Sparkles className="h-6 w-6 text-primary" /> {/* text-primary is new brown */}
           Motivational Bending Bot
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-muted-foreground">
           Select your element and current progress to get a personalized motivational boost!
         </CardDescription>
       </CardHeader>
@@ -81,7 +86,7 @@ export default function BotForm() {
               name="element"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Your Element</FormLabel>
+                  <FormLabel className="text-foreground">Your Element</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -108,7 +113,7 @@ export default function BotForm() {
               name="progressPercentage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Progress Percentage (0-100)</FormLabel>
+                  <FormLabel className="text-foreground">Progress Percentage (0-100)</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="e.g., 75" {...field} />
                   </FormControl>
@@ -127,7 +132,7 @@ export default function BotForm() {
               Get Motivation
             </Button>
             {motivationalMessage && !isLoading && (
-              <Card className="bg-accent/30 border-accent">
+              <Card className="bg-accent/30 border-accent"> {/* Accent is new brown */}
                 <CardContent className="p-4">
                   <p className="text-sm text-accent-foreground font-medium">{motivationalMessage}</p>
                 </CardContent>

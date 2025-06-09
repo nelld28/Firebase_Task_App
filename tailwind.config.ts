@@ -28,11 +28,11 @@ export default {
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
-        primary: { // This is effectively Water-themed via CSS variables
+        primary: {
           DEFAULT: 'hsl(var(--primary))', 
           foreground: 'hsl(var(--primary-foreground))',
         },
-        secondary: { // This is effectively Water-secondary-themed via CSS variables
+        secondary: {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
         },
@@ -44,7 +44,7 @@ export default {
           DEFAULT: 'hsl(var(--muted))',
           foreground: 'hsl(var(--muted-foreground))',
         },
-        accent: { // This is effectively Earth-themed via CSS variables
+        accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
         },
@@ -52,11 +52,15 @@ export default {
           DEFAULT: 'hsl(var(--popover))',
           foreground: 'hsl(var(--popover-foreground))',
         },
-        card: {
+        card: { // This 'card' is now the main content area background #fef7dc
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        // Elemental specific colors
+        'card-item': { // For individual items like chore cards
+            DEFAULT: 'hsl(var(--card-item-background))',
+            foreground: 'hsl(var(--card-item-foreground))',
+        },
+        // Elemental specific colors (from CSS variables)
         water: {
           primary: 'hsl(var(--water-primary))',
           secondary: 'hsl(var(--water-secondary))',
@@ -74,13 +78,6 @@ export default {
           'primary-brown': 'hsl(var(--air-primary-brown))',
           'secondary-orange': 'hsl(var(--air-secondary-orange))',
         },
-        // Legacy names mapped to new semantic elemental color variables
-        // This ensures components using these old names still get the themed colors.
-        'strong-secondary': 'hsl(var(--fire-primary))', 
-        'fire-orange': 'hsl(var(--fire-secondary))', 
-        'strong-tertiary': 'hsl(var(--earth-secondary))',
-        'earth-yellow': 'hsl(var(--earth-accent-yellow))',
-
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',

@@ -14,6 +14,7 @@ import ElementIcon from '@/components/icons/element-icon';
 import { db, convertTimestampsToDates } from '@/lib/firebase';
 import { collection, onSnapshot, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import { addChore, updateChore, deleteChore as deleteChoreAction, toggleChoreComplete } from '@/app/actions/choreActions';
+import { cn } from '@/lib/utils';
 
 type ViewMode = 'grid' | 'list';
 
@@ -28,7 +29,6 @@ export default function ChoresPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Fetch profiles for assignee dropdown
     const profilesQuery = query(collection(db, 'profiles'), orderBy('name', 'asc'));
     const unsubscribeProfiles = onSnapshot(profilesQuery, (querySnapshot) => {
       const profilesData = querySnapshot.docs.map(doc => ({
@@ -41,15 +41,14 @@ export default function ChoresPage() {
       toast({ title: "Error", description: "Could not load profiles for assignment.", variant: "destructive" });
     });
 
-    // Fetch chores
-    const choresQuery = query(collection(db, 'chores')/*, orderBy('dueDate', 'asc')*/); // Order by dueDate needs an index
+    const choresQuery = query(collection(db, 'chores')/*, orderBy('dueDate', 'asc')*/);
     const unsubscribeChores = onSnapshot(choresQuery, (querySnapshot) => {
       const choresData = querySnapshot.docs.map(doc => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
-          dueDate: data.dueDate instanceof Timestamp ? data.dueDate.toDate() : new Date(data.dueDate), // Ensure dueDate is a Date object
+          dueDate: data.dueDate instanceof Timestamp ? data.dueDate.toDate() : new Date(data.dueDate),
         } as ChoreType;
       });
       setChores(choresData);
@@ -101,27 +100,24 @@ export default function ChoresPage() {
   const handleSubmitChoreForm = async (values: ChoreInput, choreId?: string) => {
     let result;
     if (choreId) {
-      // For updates, ChoreInput might not include all fields. We only pass what's changed.
       const choreToUpdate = chores.find(c => c.id === choreId);
       if (!choreToUpdate) {
         toast({ title: "Error", description: "Chore not found for update.", variant: "destructive" });
         return;
       }
-      // Create a partial input based on what the form provides
       const updatePayload: Partial<ChoreInput & { isCompleted?: boolean }> = {
         name: values.name,
         description: values.description,
         assignedTo: values.assignedTo,
-        dueDate: values.dueDate, // ChoreInput has dueDate as string
+        dueDate: values.dueDate,
         elementType: values.elementType,
-        // isCompleted is handled by toggleChoreComplete
       };
       result = await updateChore(choreId, updatePayload);
       if (result.success) {
         toast({ title: "Chore Updated", description: `"${values.name}" has been saved.` });
       }
     } else {
-      result = await addChore(values); // values is ChoreInput
+      result = await addChore(values);
       if (result.success) {
         toast({ title: "Chore Created", description: `"${values.name}" has been added.` });
       }
@@ -145,7 +141,6 @@ export default function ChoresPage() {
       if (a.isCompleted !== b.isCompleted) {
         return a.isCompleted ? 1 : -1;
       }
-      // Ensure dueDate is a Date object for comparison
       const dateA = a.dueDate instanceof Date ? a.dueDate : new Date(a.dueDate);
       const dateB = b.dueDate instanceof Date ? b.dueDate : new Date(b.dueDate);
       return dateA.getTime() - dateB.getTime();
@@ -160,19 +155,20 @@ export default function ChoresPage() {
     { value: 'fire', label: 'Fire' },
   ];
 
-  if (isLoading && profiles.length === 0) { // Wait for profiles too for the form
-    return <div className="container mx-auto py-8 text-center"><p className="text-xl">Loading chores and profiles...</p></div>;
+  if (isLoading && profiles.length === 0) {
+    return <div className="container mx-auto py-8 text-center"><p className="text-xl text-foreground">Loading chores and profiles...</p></div>;
   }
   
   return (
-    <div className="container mx-auto py-8">
+    // Container div inherits background from main in app-layout (cream #fef7dc)
+    <div className="container mx-auto py-8"> 
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-        <h2 className="text-3xl font-bold font-headline">Weekly Chore Scheduler</h2>
+        <h2 className="text-3xl font-bold font-headline text-foreground">Weekly Chore Scheduler</h2>
         <div className="flex gap-2 items-center">
-          <Button variant="outline" size="icon" onClick={() => setViewMode('grid')} className={viewMode === 'grid' ? 'bg-accent text-accent-foreground' : ''} aria-label="Grid view">
+          <Button variant="outline" size="icon" onClick={() => setViewMode('grid')} className={cn(viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-primary')} aria-label="Grid view">
             <LayoutGrid className="h-5 w-5" />
           </Button>
-          <Button variant="outline" size="icon" onClick={() => setViewMode('list')} className={viewMode === 'list' ? 'bg-accent text-accent-foreground' : ''} aria-label="List view">
+          <Button variant="outline" size="icon" onClick={() => setViewMode('list')} className={cn(viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'text-primary')} aria-label="List view">
             <List className="h-5 w-5" />
           </Button>
           <Dialog open={isFormOpen} onOpenChange={(isOpen) => {
@@ -187,7 +183,7 @@ export default function ChoresPage() {
             {isFormOpen && profiles.length > 0 && (
               <ChoreForm
                 chore={editingChore}
-                profiles={profiles} // Pass fetched profiles
+                profiles={profiles}
                 onSubmit={handleSubmitChoreForm}
                 onClose={() => {
                   setIsFormOpen(false);
@@ -196,16 +192,23 @@ export default function ChoresPage() {
               />
             )}
              {isFormOpen && profiles.length === 0 && (
-                <div className="text-center p-4">Cannot add chore: No profiles available for assignment. Please add profiles first.</div>
+                <div className="text-center p-4 text-foreground">Cannot add chore: No profiles available for assignment. Please add profiles first.</div>
             )}
           </Dialog>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ElementType | 'all')} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 mb-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 mb-6 bg-secondary">
           {tabsList.map(tab => (
-            <TabsTrigger key={tab.value} value={tab.value} className="flex items-center gap-2">
+            <TabsTrigger 
+              key={tab.value} 
+              value={tab.value} 
+              className={cn(
+                "flex items-center gap-2",
+                activeTab === tab.value ? 'active-tab-indicator' : 'text-muted-foreground hover:text-foreground' 
+              )}
+            >
               {tab.value !== 'all' && <ElementIcon element={tab.value as ElementType} className="h-4 w-4" />}
               {tab.label}
             </TabsTrigger>
@@ -215,15 +218,13 @@ export default function ChoresPage() {
         {tabsList.map(tab => (
           <TabsContent key={tab.value} value={tab.value}>
             {isLoading ? (
-                 <div className="text-center py-12"><p className="text-xl">Loading chores...</p></div>
+                 <div className="text-center py-12"><p className="text-xl text-foreground">Loading chores...</p></div>
             ) : sortedChores.length > 0 ? (
               <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
                 {sortedChores.map(chore => (
                   <ChoreCard
                     key={chore.id}
                     chore={chore}
-                    // Assignee info is now part of the chore object from Firestore due to denormalization
-                    // If not denormalized, you'd find profile here: profiles.find(p => p.id === chore.assignedTo)
                     onToggleComplete={handleToggleComplete}
                     onEdit={handleEditChore}
                     onDelete={handleDeleteChore}

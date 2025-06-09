@@ -5,123 +5,118 @@
 
 @layer base {
   :root {
-    --background: 210 100% 95%; /* Very light sky blue #E6F2FF */
-    --foreground: 215 40% 20%; /* Dark desaturated blue for text */
+    /* New Theme based on mockup */
+    --background: 65 13% 69%; /* Khaki #c4c69f */
+    --foreground: 20 20% 25%; /* Dark Brown #4A3B31 */
 
-    --card: 210 75% 97%; /* Slightly off-white/light blue, distinct from background */
-    --card-foreground: 215 40% 20%;
+    --card: 46 90% 93%; /* Cream #fef7dc (for main content area) */
+    --card-foreground: 20 20% 25%;
 
-    --popover: 210 75% 97%;
-    --popover-foreground: 215 40% 20%;
+    --popover: 46 90% 93%; /* Cream #fef7dc */
+    --popover-foreground: 20 20% 25%;
 
-    /* Elemental & General Purpose Colors */
-    --water-primary: 207 90% 61%; /* Rich sky blue #42A5F5 (Used as general primary) */
-    --water-secondary: 207 80% 85%; /* Lighter shade of primary blue */
-    --primary: var(--water-primary);
-    --primary-foreground: 0 0% 100%; 
+    --primary: 30 15% 55%; /* Dusty Brown #8D7B68 */
+    --primary-foreground: 46 90% 97%; /* Light Cream #FFFCF5 for text on brown */
 
-    --secondary: var(--water-secondary);
-    --secondary-foreground: 215 40% 20%;
+    --secondary: 65 13% 80%; /* Lighter Khaki */
+    --secondary-foreground: 20 20% 25%;
 
-    --fire-primary: 1 79% 52%;   /* Fire Nation Red #E53935 */
-    --fire-secondary: 14 100% 56%; /* Fire Nation Orange #FF5722 */
-    
-    --earth-primary: 122 39% 57%; /* Muted Green #66BB6A */
-    --earth-secondary: 125 39% 44%; /* Earth Kingdom Green #43A047 */
-    --earth-accent-yellow: 50 98% 60%; /* Earth Kingdom Yellow #FDD835 */
+    --muted: 65 13% 85%; /* Even Lighter Khaki */
+    --muted-foreground: 30 15% 40%; /* Muted Brown */
 
-    --air-primary-brown: 30 35% 50%;  /* New: Earthy Brown for Air */
-    --air-secondary-orange: 25 95% 55%; /* New: Softer Orange for Air */
-    
-    /* General Accent - can be one of the elemental colors or neutral if preferred */
-    --accent: var(--earth-primary); /* Defaulting accent to Earth's green */
-    --accent-foreground: 0 0% 100%;
+    --accent: 30 15% 55%; /* Dusty Brown #8D7B68 */
+    --accent-foreground: 46 90% 97%;
 
-    --muted: 210 50% 90%; /* Muted light blue */
-    --muted-foreground: 215 30% 45%; /* Muted text color */
+    --destructive: 0 79% 52%;   /* Fire Nation Red #E53935 (kept for destructive states) */
+    --destructive-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 207 70% 80%; /* Softer blue border */
-    --input: 207 70% 88%; /* Lighter blue for input backgrounds */
-    --ring: var(--water-primary); /* Primary color for rings */
+    --border: 30 15% 50%; /* Dusty Brown for borders */
+    --input: 46 90% 96%; /* Light cream for input backgrounds */
+    --ring: 30 15% 55%; /* Dusty Brown for rings */
 
     --radius: 0.5rem;
+
+    /* Specific background for individual cards like chore items */
+    --card-item-background: 45 100% 98%; /* Very light cream/off-white #FFFCF5 */
+    --card-item-foreground: 20 20% 25%;
+
+    /* Elemental Colors (largely preserved for icons/specific themes) */
+    --water-primary: 207 90% 61%; 
+    --water-secondary: 207 80% 85%; 
     
-    /* Chart colors - Themed by element */
-    --chart-1: var(--water-primary);   /* Water */
-    --chart-2: var(--fire-primary);    /* Fire */
-    --chart-3: var(--earth-primary);   /* Earth */
-    --chart-4: var(--air-secondary-orange); /* Air */
-    --chart-5: var(--air-primary-brown);    /* Air (Brown) or another neutral */
+    --fire-primary: 1 79% 52%;   
+    --fire-secondary: 14 100% 56%; 
     
-    /* Sidebar specific theme */
-    --sidebar-background: 207 65% 45%; /* A richer, medium-dark blue for sidebar */
-    --sidebar-foreground: 210 100% 95%; /* Light text on dark blue sidebar */
-    --sidebar-primary: 210 100% 95%; /* Active item background (light) */
-    --sidebar-primary-foreground: 207 65% 45%; /* Active item text (sidebar bg color) */
-    --sidebar-accent: 207 75% 55%; /* Hover color, slightly lighter than sidebar bg */
-    --sidebar-accent-foreground: 210 100% 98%; /* Text on hover */
-    --sidebar-border: 207 60% 35%; /* Border for sidebar elements */
-    --sidebar-ring: 210 100% 95%;
-  }
+    --earth-primary: 122 39% 57%; 
+    --earth-secondary: 125 39% 44%; 
+    --earth-accent-yellow: 50 98% 60%; 
 
-  .dark {
-    --background: 215 40% 10%; 
-    --foreground: 210 100% 95%;
-
-    --card: 215 40% 15%;
-    --card-foreground: 210 100% 95%;
-
-    --popover: 215 40% 15%;
-    --popover-foreground: 210 100% 95%;
-
-    --water-primary: 207 90% 61%;
-    --water-secondary: 207 80% 70%;
-    --primary: var(--water-primary);
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: var(--water-secondary);
-    --secondary-foreground: 215 40% 10%;
-
-    --fire-primary: 1 79% 62%;   
-    --fire-secondary: 14 100% 66%; 
+    --air-primary-brown: 30 35% 50%;  
+    --air-secondary-orange: 25 95% 55%; 
     
-    --earth-primary: 122 39% 67%; 
-    --earth-secondary: 125 39% 54%; 
-    --earth-accent-yellow: 50 98% 70%;
-
-    --air-primary-brown: 30 35% 60%;  
-    --air-secondary-orange: 25 95% 65%; 
-    
-    --accent: var(--earth-primary);
-    --accent-foreground: 0 0% 100%;
-
-    --muted: 210 50% 25%;
-    --muted-foreground: 210 80% 70%;
-
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 207 50% 30%;
-    --input: 207 50% 25%;
-    --ring: var(--water-primary);
-
+    /* Chart colors - Can be re-evaluated if charts are used extensively with new theme */
     --chart-1: var(--water-primary);
     --chart-2: var(--fire-primary);
     --chart-3: var(--earth-primary);
     --chart-4: var(--air-secondary-orange);
     --chart-5: var(--air-primary-brown);
+    
+    /* Sidebar specific theme - adjusted to new palette */
+    --sidebar-background: 30 15% 40%; /* Darker Dusty Brown */
+    --sidebar-foreground: 46 90% 93%; /* Cream */
+    --sidebar-primary: 46 90% 93%; 
+    --sidebar-primary-foreground: 30 15% 40%; 
+    --sidebar-accent: 30 15% 50%; 
+    --sidebar-accent-foreground: 46 90% 97%;
+    --sidebar-border: 30 15% 35%;
+    --sidebar-ring: 46 90% 93%;
+  }
 
-    --sidebar-background: 215 30% 20%;
-    --sidebar-foreground: 210 100% 90%;
-    --sidebar-primary: 207 90% 61%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 30% 30%;
-    --sidebar-accent-foreground: 210 100% 95%;
-    --sidebar-border: 215 30% 25%;
-    --sidebar-ring: 207 90% 61%;
+  .dark {
+    /* Dark theme needs to be designed separately if required. 
+       For now, focusing on the light theme mockup.
+       This is a basic darker version of the new theme.
+    */
+    --background: 65 13% 20%; /* Dark Khaki */
+    --foreground: 46 90% 93%; /* Cream Text */
+
+    --card: 30 15% 25%; /* Dark Brown for content area */
+    --card-foreground: 46 90% 93%;
+
+    --popover: 30 15% 25%;
+    --popover-foreground: 46 90% 93%;
+
+    --primary: 30 15% 65%; /* Lighter Dusty Brown for dark mode */
+    --primary-foreground: 20 20% 15%; 
+
+    --secondary: 65 13% 30%; 
+    --secondary-foreground: 46 90% 93%;
+
+    --muted: 65 13% 25%;
+    --muted-foreground: 46 90% 70%;
+
+    --accent: 30 15% 65%;
+    --accent-foreground: 20 20% 15%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 30 15% 40%;
+    --input: 30 15% 30%;
+    --ring: 30 15% 65%;
+
+    --card-item-background: 30 15% 20%; /* Darker item background */
+    --card-item-foreground: 46 90% 93%;
+
+    /* Sidebar dark theme */
+    --sidebar-background: 30 15% 15%; 
+    --sidebar-foreground: 46 90% 85%;
+    --sidebar-primary: 30 15% 65%;
+    --sidebar-primary-foreground: 30 15% 15%;
+    --sidebar-accent: 30 15% 25%;
+    --sidebar-accent-foreground: 46 90% 90%;
+    --sidebar-border: 30 15% 10%;
+    --sidebar-ring: 30 15% 65%;
   }
 }
 
@@ -135,5 +130,11 @@
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline;
+  }
+}
+
+@layer components {
+  .active-tab-indicator {
+    @apply bg-card text-foreground shadow-sm; /* ensures active tab is light based on new card color */
   }
 }

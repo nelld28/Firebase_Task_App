@@ -4,6 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import ElementIcon, { type ElementType } from "@/components/icons/element-icon";
+import { cn } from "@/lib/utils";
 
 interface ChiMeterProps {
   currentChi: number;
@@ -21,7 +22,7 @@ const ChiMeter: React.FC<ChiMeterProps> = ({ currentChi, maxChi = 2000, element,
       case 'water': return 'bg-water-primary'; 
       case 'earth': return 'bg-earth-primary'; 
       case 'fire': return 'bg-fire-primary'; 
-      default: return 'bg-primary'; // Fallback to general primary (water-themed)
+      default: return 'bg-primary'; // Fallback to new primary (brown)
     }
   };
   
@@ -31,14 +32,17 @@ const ChiMeter: React.FC<ChiMeterProps> = ({ currentChi, maxChi = 2000, element,
       case 'water': return 'text-water-primary';
       case 'earth': return 'text-earth-primary';
       case 'fire': return 'text-fire-primary';
-      default: return 'text-primary';
+      default: return 'text-primary'; // Fallback to new primary (brown)
     }
   };
 
   return (
-    <Card className="shadow-lg w-full">
+    <Card className={cn(
+      "shadow-lg w-full",
+      "bg-card-item text-card-item-foreground border-border" // Use new very light cream and brown border
+    )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-medium font-headline">
+        <CardTitle className="text-lg font-medium font-headline text-foreground">
           {userName}'s Chi
         </CardTitle>
         <ElementIcon element={element} className={`h-6 w-6 ${getElementTextColorClass(element)}`} />
@@ -48,8 +52,9 @@ const ChiMeter: React.FC<ChiMeterProps> = ({ currentChi, maxChi = 2000, element,
         <p className="text-xs text-muted-foreground pt-1">
           {progressPercentage.toFixed(0)}% towards weekly goal ({maxChi} XP)
         </p>
-        <Progress value={progressPercentage} className="w-full mt-4 h-3" indicatorClassName={getElementColorClass(element)} />
-        <CardDescription className="mt-2 text-sm">
+        {/* Progress component's indicatorClassName will use the element specific color */}
+        <Progress value={progressPercentage} className="w-full mt-4 h-3 bg-secondary" indicatorClassName={getElementColorClass(element)} />
+        <CardDescription className="mt-2 text-sm text-muted-foreground">
           Keep up the great work, {userName}! Your elemental energy is flowing.
         </CardDescription>
       </CardContent>

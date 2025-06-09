@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import {
@@ -14,14 +15,13 @@ import NavMenu from './nav-menu';
 import AppHeader from './app-header';
 import Link from 'next/link';
 import ElementIcon from '../icons/element-icon';
+import { cn } from '@/lib/utils';
 
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Retrieve sidebar state from cookies or default to true (expanded)
   const [defaultOpen, setDefaultOpen] = React.useState(true);
 
   React.useEffect(() => {
-    // This effect runs only on the client
     const storedState = document.cookie
       .split('; ')
       .find(row => row.startsWith('sidebar_state='))
@@ -34,11 +34,11 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <SidebarProvider defaultOpen={defaultOpen} open={defaultOpen} onOpenChange={setDefaultOpen}>
-      <Sidebar variant="inset" collapsible="icon" side="left">
+      <Sidebar variant="inset" collapsible="icon" side="left" className="bg-sidebar text-sidebar-foreground">
         <SidebarRail />
         <SidebarHeader className="p-4 items-center justify-center flex">
             <Link href="/" className="flex items-center gap-2 group-data-[[data-collapsible=icon]]:hidden">
-                <ElementIcon element="air" className="h-8 w-8 text-primary" />
+                <ElementIcon element="air" className="h-8 w-8 text-primary" /> {/* Primary can be one of the elemental icon colors or the new brown */}
                 <h1 className="text-2xl font-bold font-headline text-sidebar-foreground">GetChiDa</h1>
             </Link>
              <Link href="/" className="items-center gap-2 hidden group-data-[[data-collapsible=icon]]:flex">
@@ -53,9 +53,14 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
            <ElementIcon element="water" className="h-6 w-6 text-primary hidden group-data-[[data-collapsible=icon]]:block" />
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>
+      {/* SidebarInset already applies bg-background (khaki). The main content area below gets the cream background. */}
+      <SidebarInset> 
         <AppHeader />
-        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
+        {/* This main element will have the cream background, rounded corners, and shadow */}
+        <main className={cn(
+          "flex-1 p-4 md:p-6 lg:p-8 overflow-auto",
+          "bg-card rounded-lg shadow-lg m-0 md:m-4" // Applied cream background and styling from mockup
+        )}>
           {children}
         </main>
       </SidebarInset>
