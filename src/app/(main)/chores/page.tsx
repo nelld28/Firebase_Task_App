@@ -8,14 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ChoreCard from '@/components/chores/chore-card';
 import ChoreForm from '@/components/chores/chore-form';
 import type { Chore as ChoreType, ElementType, ChoreInput, Profile as ProfileType } from '@/lib/types';
-import { PlusCircle, LayoutGrid, List, ListChecks, CalendarDays, Users } from 'lucide-react';
+import { PlusCircle, LayoutGrid, List } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ElementIcon from '@/components/icons/element-icon';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { addChore, updateChore, deleteChore as deleteChoreAction, toggleChoreComplete } from '@/app/actions/choreActions';
 import { cn } from '@/lib/utils';
-import { Card as ShadCNCard, CardHeader as ShadCNCardHeader, CardContent as ShadCNCardContent } from '@/components/ui/card';
 
 export default function ChoresPage() {
   const [chores, setChores] = useState<ChoreType[]>([]);
@@ -23,9 +22,6 @@ export default function ChoresPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingChore, setEditingChore] = useState<ChoreType | null>(null);
-
-  type MainTabValue = 'tasks' | 'schedule' | 'family';
-  const [activeMainTab, setActiveMainTab] = useState<MainTabValue>('tasks');
   
   type ElementalTabValue = ElementType | 'all';
   const [activeElementalTab, setActiveElementalTab] = useState<ElementalTabValue>('all');
@@ -151,11 +147,6 @@ export default function ChoresPage() {
     });
   }, [filteredChores]);
 
-  const mainTabsConfig: { value: MainTabValue; label: string; icon: React.ElementType }[] = [
-    { value: 'tasks', label: 'Tasks', icon: ListChecks },
-    { value: 'schedule', label: 'Schedule', icon: CalendarDays },
-    { value: 'family', label: 'Family', icon: Users },
-  ];
 
   const elementalTabsList: { value: ElementalTabValue; label: string }[] = [
     { value: 'all', label: 'All Chores' },
@@ -165,20 +156,15 @@ export default function ChoresPage() {
     { value: 'fire', label: 'Fire' },
   ];
 
-  if (isLoading && profiles.length === 0 && activeMainTab === 'tasks' && !isFormOpen) {
+  if (isLoading && profiles.length === 0 && !isFormOpen) {
     return <div className="container mx-auto py-8 text-center"><p className="text-xl text-foreground">Loading chores and profiles...</p></div>;
   }
 
   return (
     <div className="relative h-full">
-      <Tabs 
-        value={activeMainTab} 
-        onValueChange={(value) => setActiveMainTab(value as MainTabValue)} 
-        className="w-full h-full flex flex-col"
-      >
         {/* Scrollable Content Area */}
         <div className="flex-grow overflow-y-auto container mx-auto pt-8 pb-24"> {/* Added padding-bottom for fixed nav */}
-          <TabsContent value="tasks">
+          
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
               <h3 className="text-2xl font-semibold font-headline text-foreground">Today's Chores</h3>
               <div className="flex gap-2 items-center">
@@ -210,7 +196,7 @@ export default function ChoresPage() {
 
               {elementalTabsList.map(tab => (
                 <TabsContent key={tab.value} value={tab.value}>
-                  {isLoading && activeMainTab === 'tasks' ? (
+                  {isLoading ? (
                       <div className="text-center py-12"><p className="text-xl text-foreground">Loading chores...</p></div>
                   ) : sortedChores.length > 0 ? (
                     <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
@@ -257,6 +243,7 @@ export default function ChoresPage() {
                 {isFormOpen && (
                   profiles.length > 0 ? (
                       <ChoreForm
+                        key={editingChore ? `edit-${editingChore.id}` : 'add-chore'}
                         chore={editingChore}
                         profiles={profiles}
                         onSubmit={handleSubmitChoreForm}
@@ -266,7 +253,7 @@ export default function ChoresPage() {
                         }}
                       />
                     ) : (
-                      <DialogContent>
+                       <DialogContent key="no-profiles-dialog">
                         <DialogHeader>
                           <DialogTitle>Cannot Add Chore</DialogTitle>
                           <DialogDescription>
@@ -288,56 +275,7 @@ export default function ChoresPage() {
                   </p>
               )}
             </div>
-          </TabsContent>
-
-          <TabsContent value="schedule">
-            <ShadCNCard className="mt-6">
-              <ShadCNCardHeader>
-                  <ShadCNCardContent className="pt-6">
-                  <div className="text-center py-12">
-                      <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                      <p className="text-xl text-muted-foreground">Schedule View Coming Soon!</p>
-                      <p className="text-sm text-muted-foreground">Check back later to see your chores on a calendar.</p>
-                  </div>
-                  </ShadCNCardContent>
-              </ShadCNCardHeader>
-            </ShadCNCard>
-          </TabsContent>
-
-          <TabsContent value="family">
-             <ShadCNCard className="mt-6">
-               <ShadCNCardHeader>
-                  <ShadCNCardContent className="pt-6">
-                  <div className="text-center py-12">
-                      <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                      <p className="text-xl text-muted-foreground">Family Overview Coming Soon!</p>
-                      <p className="text-sm text-muted-foreground">Track chore completion and engagement across the household.</p>
-                  </div>
-                  </ShadCNCardContent>
-              </ShadCNCardHeader>
-            </ShadCNCard>
-          </TabsContent>
         </div>
-
-        {/* Main Navigation TabsList - Fixed at the bottom */}
-        <TabsList className="fixed bottom-0 left-0 right-0 z-10 grid w-full grid-cols-3 h-16 bg-card border-t border-border shadow-[0_-2px_5px_-1px_rgba(0,0,0,0.1),_0_-1px_3px_-1px_rgba(0,0,0,0.06)] p-1">
-          {mainTabsConfig.map(tab => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              className={cn(
-                "flex flex-col items-center justify-center gap-0.5 h-full text-xs sm:text-sm rounded-none focus-visible:ring-0 focus-visible:ring-offset-0",
-                "data-[state=active]:text-primary data-[state=active]:font-semibold data-[state=active]:bg-transparent",
-                "data-[state=inactive]:text-muted-foreground hover:text-foreground hover:bg-secondary/30"
-              )}
-            >
-              <tab.icon className="h-5 w-5" />
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
     </div>
   );
 }
-
