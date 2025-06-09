@@ -112,7 +112,7 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:gap-6 lg:gap-8 md:grid-cols-2 lg:grid-cols-3">
         
         <div className="lg:col-span-2">
           {currentUser && (
@@ -140,7 +140,7 @@ export default function DashboardPage() {
             {assignedChores.length > 0 ? (
               <ul className="space-y-3">
                 {assignedChores.slice(0,3).map(chore => (
-                  <li key={chore.id} className="flex items-center justify-between p-3 bg-card-foreground/5 rounded-md">
+                  <li key={chore.id} className="flex items-center justify-between p-2 sm:p-3 bg-card-foreground/5 rounded-md">
                     <div>
                       <p className="font-medium text-sm sm:text-base">{chore.name}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground">Due: {format(chore.dueDate, "PPP")}</p>
@@ -168,9 +168,9 @@ export default function DashboardPage() {
             <CardTitle className="font-headline text-lg sm:text-xl md:text-2xl">House Overview</CardTitle>
              <CardDescription className="text-sm sm:text-base">Quick links and team stats.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 px-4 pb-4 pt-0 sm:px-6 sm:pb-6 sm:pt-0">
+          <CardContent className="space-y-4 px-2 pb-2 pt-0 sm:px-4 sm:pb-4 md:px-6 md:pb-6">
             {allProfiles.slice(0,4).map(profile => ( // Show max 4 profiles here
-              <div key={profile.id} className="flex items-center justify-between p-2 bg-card-foreground/5 rounded-md">
+              <div key={profile.id} className="flex items-center justify-between p-1.5 sm:p-2 bg-card-foreground/5 rounded-md">
                 <div className="flex items-center gap-2 flex-1 min-w-0"> {/* Allow this to shrink and enable truncation */}
                   <Image 
                     src={profile.avatarUrl || `https://placehold.co/40x40.png`} 
@@ -216,4 +216,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
