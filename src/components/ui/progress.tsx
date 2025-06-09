@@ -18,15 +18,15 @@ const Progress = React.forwardRef<
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
-      "relative h-5 w-full bg-background border-[2.5px] border-black p-0.5", // Sharp rectangle, 2.5px black border, padding for inset fill
+      "relative h-5 w-full overflow-hidden border-[3px] border-[#8d6e63] bg-muted p-[1px]", // Outer 3px border (#8d6e63), track color (bg-muted), 1px padding for inset
       className
     )}
-    {...props} // Now props does not contain indicatorClassName
+    {...props}
   >
     <ProgressPrimitive.Indicator
-      className={cn( // Apply indicatorClassName to the Indicator for its background
-        "h-full w-full flex-1 bg-slate-300 border-[2.5px] border-black transition-all", // Default fill color, 2.5px black border
-        indicatorClassName 
+      className={cn( 
+        "h-full w-full flex-1 transition-all", // Fill only, no border on indicator
+        indicatorClassName ? indicatorClassName : "bg-slate-300" // Default fill or specific via prop
       )}
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     />
