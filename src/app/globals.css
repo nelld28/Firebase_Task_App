@@ -34,7 +34,7 @@
     --input: 46 90% 96%; /* Light cream for input backgrounds */
     --ring: 30 15% 55%; /* Dusty Brown for rings */
 
-    --radius: 0.5rem;
+    --radius: 0px; /* Changed from 0.5rem to 0px for straight borders */
 
     /* Specific background for individual cards like chore items */
     --card-item-background: 45 100% 98%; /* Very light cream/off-white #FFFCF5 */
