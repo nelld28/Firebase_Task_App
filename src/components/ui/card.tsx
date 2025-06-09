@@ -9,7 +9,9 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-none border border-r-2 bg-card text-card-foreground shadow-sm", // Added border-r-2
+      "rounded-none relative bg-card text-card-foreground", // Removed shadow and general border, added relative
+      "before:content-[''] before:absolute before:bottom-0 before:left-1 before:right-1 before:h-[3px] before:bg-border", // Bottom pseudo-border
+      "after:content-[''] after:absolute after:top-1 after:bottom-1 after:right-0 after:w-[3px] after:bg-border",       // Right pseudo-border
       className
     )}
     {...props}
