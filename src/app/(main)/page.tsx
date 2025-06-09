@@ -168,7 +168,7 @@ export default function DashboardPage() {
             <CardTitle className="font-headline text-lg sm:text-xl md:text-2xl">House Overview</CardTitle>
              <CardDescription className="text-sm sm:text-base">Quick links and team stats.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 px-4 pb-4 pt-0 sm:px-6 sm:pb-6 sm:pt-0">
             {allProfiles.slice(0,4).map(profile => ( // Show max 4 profiles here
               <div key={profile.id} className="flex items-center justify-between p-2 bg-card-foreground/5 rounded-md">
                 <div className="flex items-center gap-2 flex-1 min-w-0"> {/* Allow this to shrink and enable truncation */}
@@ -216,3 +216,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
