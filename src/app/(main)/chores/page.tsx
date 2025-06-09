@@ -15,7 +15,7 @@ import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { addChore, updateChore, deleteChore as deleteChoreAction, toggleChoreComplete } from '@/app/actions/choreActions';
 import { cn } from '@/lib/utils';
-import { Card, CardHeader as ShadCNCardHeader, CardContent as ShadCNCardContent } from '@/components/ui/card'; // Aliased to avoid conflict
+import { Card as ShadCNCard, CardHeader as ShadCNCardHeader, CardContent as ShadCNCardContent } from '@/components/ui/card'; // Aliased to avoid conflict
 
 export default function ChoresPage() {
   const [chores, setChores] = useState<ChoreType[]>([]);
@@ -24,8 +24,11 @@ export default function ChoresPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingChore, setEditingChore] = useState<ChoreType | null>(null);
 
-  const [activeMainTab, setActiveMainTab] = useState<string>('tasks');
-  const [activeElementalTab, setActiveElementalTab] = useState<ElementType | 'all'>('all');
+  type MainTabValue = 'tasks' | 'schedule' | 'family';
+  const [activeMainTab, setActiveMainTab] = useState<MainTabValue>('tasks');
+  
+  type ElementalTabValue = ElementType | 'all';
+  const [activeElementalTab, setActiveElementalTab] = useState<ElementalTabValue>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const { toast } = useToast();
 
@@ -154,8 +157,6 @@ export default function ChoresPage() {
     { value: 'family', label: 'Family', icon: Users },
   ];
 
-  type MainTabValue = 'tasks' | 'schedule' | 'family';
-
   const elementalTabsList: { value: ElementalTabValue; label: string }[] = [
     { value: 'all', label: 'All Chores' },
     { value: 'air', label: 'Air' },
@@ -219,7 +220,7 @@ export default function ChoresPage() {
 
             {elementalTabsList.map(tab => (
               <TabsContent key={tab.value} value={tab.value}>
-                {isLoading ? (
+                {isLoading && activeMainTab === 'tasks' ? (
                     <div className="text-center py-12"><p className="text-xl text-foreground">Loading chores...</p></div>
                 ) : sortedChores.length > 0 ? (
                   <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
@@ -239,6 +240,9 @@ export default function ChoresPage() {
                       No {activeElementalTab !== 'all' ? `${activeElementalTab.charAt(0).toUpperCase() + activeElementalTab.slice(1)} ` : ''}
                       chores found.
                     </p>
+                     {activeElementalTab === 'all' && profiles.length === 0 && (
+                        <p className="text-sm text-muted-foreground">Tip: Add some housemate profiles before creating chores!</p>
+                    )}
                   </div>
                 )}
               </TabsContent>
@@ -260,58 +264,67 @@ export default function ChoresPage() {
                   <PlusCircle className="mr-2 h-5 w-5" /> Add New Chore
                 </Button>
               </DialogTrigger>
-              {isFormOpen && ( // Conditionally render form or message
-                profiles.length > 0 ? (
-                  <ChoreForm
-                    chore={editingChore}
-                    profiles={profiles}
-                    onSubmit={handleSubmitChoreForm}
-                    onClose={() => {
-                      setIsFormOpen(false);
-                      setEditingChore(null);
-                    }}
-                  />
-                ) : (
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Cannot Add Chore</DialogTitle>
-                      <DialogDescription>
-                        No housemate profiles are available for assignment. Please add at least one profile before creating chores.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <DialogClose asChild>
-                          <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>OK</Button>
-                      </DialogClose>
-                    </DialogFooter>
-                  </DialogContent>
-                )
-              )}
+              {isFormOpen && (
+                  profiles.length > 0 ? (
+                    <ChoreForm
+                      chore={editingChore}
+                      profiles={profiles}
+                      onSubmit={handleSubmitChoreForm}
+                      onClose={() => {
+                        setIsFormOpen(false);
+                        setEditingChore(null);
+                      }}
+                    />
+                  ) : (
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Cannot Add Chore</DialogTitle>
+                        <DialogDescription>
+                          No housemate profiles are available for assignment. Please add at least one profile before creating chores.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                            <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>OK</Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  )
+                )}
             </Dialog>
+             {profiles.length === 0 && !isLoading && (
+                <p className="mt-4 text-center text-sm text-muted-foreground">
+                    Please add housemate profiles to assign and create chores.
+                </p>
+            )}
           </div>
         </TabsContent>
 
         <TabsContent value="schedule">
           <ShadCNCard className="mt-6">
-            <ShadCNCardContent className="pt-6">
-              <div className="text-center py-12">
-                <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-xl text-muted-foreground">Schedule View Coming Soon!</p>
-                <p className="text-sm text-muted-foreground">Check back later to see your chores on a calendar.</p>
-              </div>
-            </ShadCNCardContent>
+            <ShadCNCardHeader>
+                <ShadCNCardContent className="pt-6">
+                <div className="text-center py-12">
+                    <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="text-xl text-muted-foreground">Schedule View Coming Soon!</p>
+                    <p className="text-sm text-muted-foreground">Check back later to see your chores on a calendar.</p>
+                </div>
+                </ShadCNCardContent>
+            </ShadCNCardHeader>
           </ShadCNCard>
         </TabsContent>
 
         <TabsContent value="family">
            <ShadCNCard className="mt-6">
-            <ShadCNCardContent className="pt-6">
-              <div className="text-center py-12">
-                <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-xl text-muted-foreground">Family Overview Coming Soon!</p>
-                <p className="text-sm text-muted-foreground">Track chore completion and engagement across the household.</p>
-              </div>
-            </ShadCNCardContent>
+             <ShadCNCardHeader>
+                <ShadCNCardContent className="pt-6">
+                <div className="text-center py-12">
+                    <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="text-xl text-muted-foreground">Family Overview Coming Soon!</p>
+                    <p className="text-sm text-muted-foreground">Track chore completion and engagement across the household.</p>
+                </div>
+                </ShadCNCardContent>
+            </ShadCNCardHeader>
           </ShadCNCard>
         </TabsContent>
       </Tabs>

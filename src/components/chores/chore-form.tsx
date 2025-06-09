@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogDescriptionComponent, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import type { Chore, Profile, ElementType, ChoreInput } from '@/lib/types';
 import ElementIcon from '@/components/icons/element-icon';
 import { cn } from '@/lib/utils';
@@ -23,8 +23,8 @@ const choreFormSchema = z.object({
   name: z.string().min(3, { message: "Chore name must be at least 3 characters." }),
   description: z.string().optional(),
   assignedTo: z.string({ required_error: "Please assign this chore to someone." }),
-  dueDate: z.string({ required_error: "Please select a due date." }).refine(val => val === "" || !isNaN(Date.parse(val)), { message: "Invalid date format or empty string not allowed if required" })
-    .refine(val => val !== "", { message: "Please select a due date." }), // Explicitly make empty string invalid
+  dueDate: z.string({ required_error: "Please select a due date." }).refine(val => val !== "", { message: "Due date cannot be empty." })
+    .refine(val => !isNaN(Date.parse(val)), { message: "Invalid date format." }),
   elementType: z.enum(['air', 'water', 'earth', 'fire'], { required_error: "Please select an element type for this chore." }),
 });
 
@@ -82,9 +82,9 @@ const ChoreForm: React.FC<ChoreFormProps> = ({ chore, profiles, onSubmit, onClos
           <ListChecksIcon className="h-6 w-6 text-primary" />
           {chore ? 'Edit Chore' : 'Create New Chore'}
         </DialogTitle>
-        <DialogDescription>
+        <DialogDescriptionComponent>
           {chore ? `Update details for "${chore.name}".` : 'Add a new task to the household chore list.'}
-        </DialogDescription>
+        </DialogDescriptionComponent>
       </DialogHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5 py-4 max-h-[70vh] overflow-y-auto pr-2">
@@ -223,4 +223,3 @@ const ChoreForm: React.FC<ChoreFormProps> = ({ chore, profiles, onSubmit, onClos
 };
 
 export default ChoreForm;
-
