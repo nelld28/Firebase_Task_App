@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ChoreCard from '@/components/chores/chore-card';
 import ChoreForm from '@/components/chores/chore-form';
@@ -11,7 +11,7 @@ import type { Chore as ChoreType, ElementType, ChoreInput, Profile as ProfileTyp
 import { PlusCircle, LayoutGrid, List } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ElementIcon from '@/components/icons/element-icon';
-import { db, convertTimestampsToDates } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import { addChore, updateChore, deleteChore as deleteChoreAction, toggleChoreComplete } from '@/app/actions/choreActions';
 import { cn } from '@/lib/utils';
@@ -160,7 +160,6 @@ export default function ChoresPage() {
   }
   
   return (
-    // Container div inherits background from main in app-layout (cream #fef7dc)
     <div className="container mx-auto py-8"> 
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <h2 className="text-3xl font-bold font-headline text-foreground">Weekly Chore Scheduler</h2>
@@ -176,7 +175,7 @@ export default function ChoresPage() {
             if (!isOpen) setEditingChore(null);
           }}>
             <DialogTrigger asChild>
-              <Button onClick={handleAddChore} disabled={profiles.length === 0}>
+              <Button onClick={handleAddChore} disabled={profiles.length === 0 && !isLoading}> {/* Disable button if no profiles and not loading */}
                 <PlusCircle className="mr-2 h-5 w-5" /> Add New Chore
               </Button>
             </DialogTrigger>
@@ -191,8 +190,20 @@ export default function ChoresPage() {
                 }}
               />
             )}
-             {isFormOpen && profiles.length === 0 && (
-                <div className="text-center p-4 text-foreground">Cannot add chore: No profiles available for assignment. Please add profiles first.</div>
+             {isFormOpen && profiles.length === 0 && !isLoading && (
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Cannot Add Chore</DialogTitle>
+                    <DialogDescription>
+                      No housemate profiles are available for assignment. Please add at least one profile before creating chores.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                        <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>OK</Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
             )}
           </Dialog>
         </div>
@@ -237,7 +248,7 @@ export default function ChoresPage() {
                   No {activeTab !== 'all' ? `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} ` : ''}
                   chores found.
                 </p>
-                <Button onClick={handleAddChore} size="lg" disabled={profiles.length === 0}>
+                <Button onClick={handleAddChore} size="lg" disabled={profiles.length === 0 && !isLoading}>
                   <PlusCircle className="mr-2 h-5 w-5" /> Add a Chore
                 </Button>
               </div>
