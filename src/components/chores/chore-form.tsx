@@ -1,7 +1,7 @@
 
 'use client';
 
-import * as React from 'react'; // Added this line
+import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -13,28 +13,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import type { Chore, Profile, ElementType, ChoreInput } from '@/lib/types'; // Updated import
+import type { Chore, Profile, ElementType, ChoreInput } from '@/lib/types';
 import ElementIcon from '@/components/icons/element-icon';
 import { cn } from '@/lib/utils';
 import { CalendarIcon, ListChecksIcon, Save } from 'lucide-react';
-import { format, parseISO } from 'date-fns'; // parseISO for converting string back to Date if needed
+import { format, parseISO } from 'date-fns';
 
 const choreFormSchema = z.object({
   name: z.string().min(3, { message: "Chore name must be at least 3 characters." }),
   description: z.string().optional(),
   assignedTo: z.string({ required_error: "Please assign this chore to someone." }),
-  // DueDate will be a string in YYYY-MM-DD format from the calendar, convert to Date/Timestamp in action
-  dueDate: z.string({ required_error: "Please select a due date." }).refine(val => !isNaN(Date.parse(val)), { message: "Invalid date format" }),
+  dueDate: z.string({ required_error: "Please select a due date." }).refine(val => val === "" || !isNaN(Date.parse(val)), { message: "Invalid date format or empty string not allowed if required" })
+    .refine(val => val !== "", { message: "Please select a due date." }), // Explicitly make empty string invalid
   elementType: z.enum(['air', 'water', 'earth', 'fire'], { required_error: "Please select an element type for this chore." }),
 });
 
-// This type is for the form's internal values
 type ChoreFormInternalValues = z.infer<typeof choreFormSchema>;
 
 interface ChoreFormProps {
   chore?: Chore | null;
   profiles: Profile[];
-  onSubmit: (values: ChoreInput, choreId?: string) => void; // onSubmit now takes ChoreInput
+  onSubmit: (values: ChoreInput, choreId?: string) => void;
   onClose: () => void;
 }
 
@@ -45,29 +44,37 @@ const ChoreForm: React.FC<ChoreFormProps> = ({ chore, profiles, onSubmit, onClos
       name: chore?.name || '',
       description: chore?.description || '',
       assignedTo: chore?.assignedTo || undefined,
-      // Format existing Date to YYYY-MM-DD string for the calendar state
       dueDate: chore?.dueDate ? format(new Date(chore.dueDate), "yyyy-MM-dd") : undefined,
       elementType: chore?.elementType || undefined,
     },
   });
 
+  const [calendarDate, setCalendarDate] = React.useState<Date | undefined>(
+    chore?.dueDate ? new Date(chore.dueDate) : undefined
+  );
+
+  // State for determining the minimum selectable date in the calendar (today)
+  const [minSelectableDate, setMinSelectableDate] = React.useState<Date | undefined>(undefined);
+
+  React.useEffect(() => {
+    // This effect runs only on the client, after hydration
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to the start of today
+    setMinSelectableDate(today);
+  }, []); // Empty dependency array ensures this runs once on mount
+
+
   const handleSubmit = (values: ChoreFormInternalValues) => {
-    // Convert form values to ChoreInput type for the server action
     const choreInputValues: ChoreInput = {
       name: values.name,
       description: values.description,
       assignedTo: values.assignedTo,
-      dueDate: values.dueDate, // Pass as string, server action handles conversion
+      dueDate: values.dueDate, 
       elementType: values.elementType,
     };
     onSubmit(choreInputValues, chore?.id);
   };
   
-  // State for calendar component because it expects a Date object
-  const [calendarDate, setCalendarDate] = React.useState<Date | undefined>(
-    chore?.dueDate ? new Date(chore.dueDate) : undefined
-  );
-
   return (
     <DialogContent className="sm:max-w-lg">
       <DialogHeader>
@@ -134,7 +141,7 @@ const ChoreForm: React.FC<ChoreFormProps> = ({ chore, profiles, onSubmit, onClos
           <FormField
             control={form.control}
             name="dueDate"
-            render={({ field }) => ( // field.value here is the string yyyy-MM-dd
+            render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Due Date</FormLabel>
                 <Popover>
@@ -155,12 +162,15 @@ const ChoreForm: React.FC<ChoreFormProps> = ({ chore, profiles, onSubmit, onClos
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={calendarDate} // Calendar uses Date object
+                      selected={calendarDate}
                       onSelect={(date) => {
-                        setCalendarDate(date); // Update local Date state for calendar
-                        field.onChange(date ? format(date, "yyyy-MM-dd") : ""); // Update form with string
+                        setCalendarDate(date); 
+                        field.onChange(date ? format(date, "yyyy-MM-dd") : ""); 
                       }}
-                      disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() -1))}
+                      disabled={(dateToTest) => {
+                        if (!minSelectableDate) return true; // Disable all if min date not set yet
+                        return dateToTest < minSelectableDate;
+                      }}
                       initialFocus
                     />
                   </PopoverContent>
@@ -201,7 +211,7 @@ const ChoreForm: React.FC<ChoreFormProps> = ({ chore, profiles, onSubmit, onClos
             <DialogClose asChild>
               <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
             </DialogClose>
-            <Button type="submit">
+            <Button type="submit" disabled={form.formState.isSubmitting}>
               <Save className="mr-2 h-4 w-4" />
               {chore ? 'Save Changes' : 'Create Chore'}
             </Button>
@@ -213,3 +223,4 @@ const ChoreForm: React.FC<ChoreFormProps> = ({ chore, profiles, onSubmit, onClos
 };
 
 export default ChoreForm;
+
