@@ -6,7 +6,7 @@ export default function MotivationalBotPage() {
   return (
     <div className="container mx-auto py-8 flex flex-col items-center">
       <div className="w-full max-w-3xl mb-12">
-        <Card className="text-center shadow-lg overflow-hidden">
+        <Card className="text-center overflow-hidden">
           <div className="relative h-48 sm:h-64 w-full">
             <Image 
               src="https://placehold.co/800x400.png" // Placeholder for a fitting image
@@ -18,10 +18,10 @@ export default function MotivationalBotPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
           </div>
           <CardHeader className="relative -mt-16 sm:-mt-20 z-10">
-            <CardTitle className="font-headline text-3xl sm:text-4xl text-primary">
+            <CardTitle className="font-headline text-2xl sm:text-3xl md:text-4xl text-primary">
               Your Personal Bending Coach
             </CardTitle>
-            <CardDescription className="text-md sm:text-lg text-foreground/90 mt-2">
+            <CardDescription className="text-sm sm:text-base md:text-lg text-foreground/90 mt-2">
               Feeling stuck? Let the ancient wisdom of the elements guide and motivate you.
               Share your progress, and your elemental affinity, and receive a spark of inspiration.
             </CardDescription>
@@ -31,11 +31,11 @@ export default function MotivationalBotPage() {
       
       <BotForm />
 
-      <Card className="w-full max-w-3xl mt-12 shadow-lg">
+      <Card className="w-full max-w-3xl mt-12">
         <CardHeader>
-            <CardTitle className="font-headline">How it Works</CardTitle>
+            <CardTitle className="font-headline text-xl sm:text-2xl">How it Works</CardTitle>
         </CardHeader>
-        <CardContent className="text-foreground/80 space-y-2">
+        <CardContent className="text-foreground/80 space-y-2 text-sm sm:text-base">
             <p>Our Motivational Bending Bot harnesses the power of ancient elemental philosophies (and a little bit of modern AI magic!) to provide you with tailored encouragement.</p>
             <ol className="list-decimal list-inside space-y-1 pl-2">
                 <li><strong>Select Your Element:</strong> Choose the element that resonates most with you - Air, Water, Earth, or Fire.</li>

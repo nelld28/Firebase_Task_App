@@ -83,14 +83,14 @@ export default function DashboardPage() {
   }, [currentUser, toast]);
 
   if (isLoading) {
-    return <div className="container mx-auto py-8 text-center"><p className="text-xl">Loading dashboard...</p></div>;
+    return <div className="container mx-auto py-8 text-center"><p className="text-lg sm:text-xl">Loading dashboard...</p></div>;
   }
 
   if (!currentUser && !isLoading && allProfiles.length === 0) {
      return (
       <div className="container mx-auto py-8 text-center">
-        <p className="text-xl text-muted-foreground mb-4">Welcome to GetChiDa!</p>
-        <p className="mb-6">It looks like there are no profiles yet. Please add a profile to get started.</p>
+        <p className="text-lg sm:text-xl text-muted-foreground mb-4">Welcome to GetChiDa!</p>
+        <p className="mb-6 text-sm sm:text-base">It looks like there are no profiles yet. Please add a profile to get started.</p>
         <Button asChild size="lg">
           <Link href="/profiles">Go to Profiles <ArrowRight className="ml-2 h-4 w-4" /></Link>
         </Button>
@@ -101,7 +101,7 @@ export default function DashboardPage() {
   if (!currentUser && !isLoading) {
      return (
       <div className="container mx-auto py-8 text-center">
-        <p className="text-xl text-muted-foreground mb-4">Please select or create a profile to view the dashboard.</p>
+        <p className="text-lg sm:text-xl text-muted-foreground mb-4">Please select or create a profile to view the dashboard.</p>
          <Button asChild size="lg">
           <Link href="/profiles">Go to Profiles <ArrowRight className="ml-2 h-4 w-4" /></Link>
         </Button>
@@ -128,45 +128,45 @@ export default function DashboardPage() {
          <BotForm />
         </div>
         
-        <Card className="shadow-lg lg:col-span-2">
+        <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="font-headline text-xl flex items-center gap-2">
+            <CardTitle className="font-headline text-lg sm:text-xl flex items-center gap-2">
               <ListTodo className="h-6 w-6 text-primary" />
               My Upcoming Chores
             </CardTitle>
-            <CardDescription>Tasks assigned to {currentUser?.name || 'you'} that need attention.</CardDescription>
+            <CardDescription className="text-sm sm:text-base">Tasks assigned to {currentUser?.name || 'you'} that need attention.</CardDescription>
           </CardHeader>
           <CardContent>
             {assignedChores.length > 0 ? (
               <ul className="space-y-3">
                 {assignedChores.slice(0,3).map(chore => (
-                  <li key={chore.id} className="flex items-center justify-between p-3 bg-card-foreground/5 rounded-lg">
+                  <li key={chore.id} className="flex items-center justify-between p-3 bg-card-foreground/5 rounded-md">
                     <div>
-                      <p className="font-medium">{chore.name}</p>
-                      <p className="text-xs text-muted-foreground">Due: {format(chore.dueDate, "PPP")}</p>
+                      <p className="font-medium text-sm sm:text-base">{chore.name}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">Due: {format(chore.dueDate, "PPP")}</p>
                     </div>
                     <ElementIcon element={chore.elementType} className="h-5 w-5 text-muted-foreground" />
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-muted-foreground">No upcoming chores for {currentUser?.name || 'you'}. Great job or enjoy the peace!</p>
+              <p className="text-muted-foreground text-sm sm:text-base">No upcoming chores for {currentUser?.name || 'you'}. Great job or enjoy the peace!</p>
             )}
              {assignedChores.length > 3 && (
-                <p className="text-sm text-muted-foreground mt-2">...and {assignedChores.length - 3} more.</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-2">...and {assignedChores.length - 3} more.</p>
             )}
           </CardContent>
           <CardFooter>
-            <Button asChild variant="outline" className="w-full">
+            <Button asChild variant="outline" className="w-full text-sm sm:text-base">
               <Link href="/chores">View All Chores <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </CardFooter>
         </Card>
 
-        <Card className="shadow-lg">
+        <Card>
           <CardHeader>
-            <CardTitle className="font-headline text-xl">House Overview</CardTitle>
-             <CardDescription>Quick links and team stats.</CardDescription>
+            <CardTitle className="font-headline text-lg sm:text-xl">House Overview</CardTitle>
+             <CardDescription className="text-sm sm:text-base">Quick links and team stats.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {allProfiles.slice(0,4).map(profile => ( // Show max 4 profiles here
@@ -177,28 +177,28 @@ export default function DashboardPage() {
                     alt={profile.name} 
                     width={32} 
                     height={32} 
-                    className="rounded-full"
+                    className="rounded-full border-[3px] border-primary"
                     data-ai-hint="person avatar"
                   />
-                  <span className="font-medium">{profile.name}</span>
+                  <span className="font-medium text-sm sm:text-base">{profile.name}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-sm font-semibold text-primary">{profile.chi}</span>
-                  <span className="text-xs text-muted-foreground">XP</span>
+                  <span className="text-sm sm:text-base font-semibold text-primary">{profile.chi}</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">XP</span>
                   <ElementIcon element={profile.element} className="h-4 w-4 text-muted-foreground ml-1" />
                 </div>
               </div>
             ))}
-             <Button asChild className="w-full mt-4">
+             <Button asChild className="w-full mt-4 text-sm sm:text-base">
                 <Link href="/profiles">Manage Profiles <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg col-span-1 md:col-span-2 lg:col-span-3 overflow-hidden">
+        <Card className="col-span-1 md:col-span-2 lg:col-span-3 overflow-hidden">
           <CardHeader>
-            <CardTitle className="font-headline text-xl">The Four Nations</CardTitle>
-            <CardDescription>Inspired by the world of Avatar.</CardDescription>
+            <CardTitle className="font-headline text-lg sm:text-xl">The Four Nations</CardTitle>
+            <CardDescription className="text-sm sm:text-base">Inspired by the world of Avatar.</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
              <Image 

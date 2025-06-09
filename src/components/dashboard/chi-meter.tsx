@@ -38,23 +38,22 @@ const ChiMeter: React.FC<ChiMeterProps> = ({ currentChi, maxChi = 2000, element,
 
   return (
     <Card className={cn(
-      "shadow-lg w-full",
-      "bg-card-item text-card-item-foreground border-border" // Use new very light cream and brown border
+      "w-full",
+      "bg-card-item text-card-item-foreground" 
     )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-medium font-headline text-foreground">
+        <CardTitle className="text-base sm:text-lg font-medium font-headline text-foreground">
           {userName}'s Chi
         </CardTitle>
-        <ElementIcon element={element} className={`h-6 w-6 ${getElementTextColorClass(element)}`} />
+        <ElementIcon element={element} className={`h-5 w-5 sm:h-6 sm:w-6 ${getElementTextColorClass(element)}`} />
       </CardHeader>
       <CardContent>
-        <div className={`text-4xl font-bold font-headline ${getElementTextColorClass(element)}`}>{currentChi} <span className="text-sm font-body text-muted-foreground">XP</span></div>
-        <p className="text-xs text-muted-foreground pt-1">
+        <div className={`text-3xl sm:text-4xl font-bold font-headline ${getElementTextColorClass(element)}`}>{currentChi} <span className="text-xs sm:text-sm font-body text-muted-foreground">XP</span></div>
+        <p className="text-xs sm:text-sm text-muted-foreground pt-1">
           {progressPercentage.toFixed(0)}% towards weekly goal ({maxChi} XP)
         </p>
-        {/* Progress component's indicatorClassName will use the element specific color */}
-        <Progress value={progressPercentage} className="w-full mt-4 h-3 bg-secondary" indicatorClassName={getElementColorClass(element)} />
-        <CardDescription className="mt-2 text-sm text-muted-foreground">
+        <Progress value={progressPercentage} className="w-full mt-4" indicatorClassName={getElementColorClass(element)} />
+        <CardDescription className="mt-2 text-xs sm:text-sm text-muted-foreground">
           Keep up the great work, {userName}! Your elemental energy is flowing.
         </CardDescription>
       </CardContent>
