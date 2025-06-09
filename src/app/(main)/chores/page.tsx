@@ -8,15 +8,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ChoreCard from '@/components/chores/chore-card';
 import ChoreForm from '@/components/chores/chore-form';
 import type { Chore as ChoreType, ElementType, ChoreInput, Profile as ProfileType } from '@/lib/types';
-import { PlusCircle, LayoutGrid, List } from 'lucide-react';
+import { PlusCircle, LayoutGrid, List, ListChecks, CalendarDays, Users } from 'lucide-react'; // Added new icons
 import { useToast } from '@/hooks/use-toast';
 import ElementIcon from '@/components/icons/element-icon';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, query, orderBy, where, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { addChore, updateChore, deleteChore as deleteChoreAction, toggleChoreComplete } from '@/app/actions/choreActions';
 import { cn } from '@/lib/utils';
+import { Card } from '@/components/ui/card';
 
 type ViewMode = 'grid' | 'list';
+type MainTabValue = 'tasks' | 'schedule' | 'family';
+type ElementalTabValue = ElementType | 'all';
 
 export default function ChoresPage() {
   const [chores, setChores] = useState<ChoreType[]>([]);
@@ -24,7 +27,9 @@ export default function ChoresPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingChore, setEditingChore] = useState<ChoreType | null>(null);
-  const [activeTab, setActiveTab] = useState<ElementType | 'all'>('all');
+  
+  const [activeMainTab, setActiveMainTab] = useState<MainTabValue>('tasks');
+  const [activeElementalTab, setActiveElementalTab] = useState<ElementalTabValue>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const { toast } = useToast();
 
@@ -41,7 +46,7 @@ export default function ChoresPage() {
       toast({ title: "Error", description: "Could not load profiles for assignment.", variant: "destructive" });
     });
 
-    const choresQuery = query(collection(db, 'chores')/*, orderBy('dueDate', 'asc')*/);
+    const choresQuery = query(collection(db, 'chores'));
     const unsubscribeChores = onSnapshot(choresQuery, (querySnapshot) => {
       const choresData = querySnapshot.docs.map(doc => {
         const data = doc.data();
@@ -132,9 +137,9 @@ export default function ChoresPage() {
   };
 
   const filteredChores = useMemo(() => {
-    if (activeTab === 'all') return chores;
-    return chores.filter(chore => chore.elementType === activeTab);
-  }, [chores, activeTab]);
+    if (activeElementalTab === 'all') return chores;
+    return chores.filter(chore => chore.elementType === activeElementalTab);
+  }, [chores, activeElementalTab]);
 
   const sortedChores = useMemo(() => {
     return [...filteredChores].sort((a, b) => {
@@ -147,7 +152,13 @@ export default function ChoresPage() {
     });
   }, [filteredChores]);
 
-  const tabsList: { value: ElementType | 'all'; label: string }[] = [
+  const mainTabsConfig: { value: MainTabValue; label: string; icon: React.ElementType }[] = [
+    { value: 'tasks', label: 'Tasks', icon: ListChecks },
+    { value: 'schedule', label: 'Schedule', icon: CalendarDays },
+    { value: 'family', label: 'Family', icon: Users },
+  ];
+
+  const elementalTabsList: { value: ElementalTabValue; label: string }[] = [
     { value: 'all', label: 'All Chores' },
     { value: 'air', label: 'Air' },
     { value: 'water', label: 'Water' },
@@ -155,107 +166,157 @@ export default function ChoresPage() {
     { value: 'fire', label: 'Fire' },
   ];
 
-  if (isLoading && profiles.length === 0) {
+  if (isLoading && profiles.length === 0 && activeMainTab === 'tasks') {
     return <div className="container mx-auto py-8 text-center"><p className="text-xl text-foreground">Loading chores and profiles...</p></div>;
   }
   
   return (
-    <div className="container mx-auto py-8"> 
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-        <h2 className="text-3xl font-bold font-headline text-foreground">Weekly Chore Scheduler</h2>
-        <div className="flex gap-2 items-center">
-          <Button variant="outline" size="icon" onClick={() => setViewMode('grid')} className={cn(viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-primary')} aria-label="Grid view">
-            <LayoutGrid className="h-5 w-5" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => setViewMode('list')} className={cn(viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'text-primary')} aria-label="List view">
-            <List className="h-5 w-5" />
-          </Button>
-          <Dialog open={isFormOpen} onOpenChange={(isOpen) => {
-            setIsFormOpen(isOpen);
-            if (!isOpen) setEditingChore(null);
-          }}>
-            <DialogTrigger asChild>
-              <Button onClick={handleAddChore} disabled={profiles.length === 0 && !isLoading}> {/* Disable button if no profiles and not loading */}
-                <PlusCircle className="mr-2 h-5 w-5" /> Add New Chore
-              </Button>
-            </DialogTrigger>
-            {isFormOpen && profiles.length > 0 && (
-              <ChoreForm
-                chore={editingChore}
-                profiles={profiles}
-                onSubmit={handleSubmitChoreForm}
-                onClose={() => {
-                  setIsFormOpen(false);
-                  setEditingChore(null);
-                }}
-              />
-            )}
-             {isFormOpen && profiles.length === 0 && !isLoading && (
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Cannot Add Chore</DialogTitle>
-                    <DialogDescription>
-                      No housemate profiles are available for assignment. Please add at least one profile before creating chores.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                        <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>OK</Button>
-                    </DialogClose>
-                  </DialogFooter>
-                </DialogContent>
-            )}
-          </Dialog>
-        </div>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ElementType | 'all')} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 mb-6 bg-secondary">
-          {tabsList.map(tab => (
+    <div className="container mx-auto py-8">
+      <Tabs value={activeMainTab} onValueChange={(value) => setActiveMainTab(value as MainTabValue)} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-6 bg-secondary rounded-lg p-1">
+          {mainTabsConfig.map(tab => (
             <TabsTrigger 
               key={tab.value} 
               value={tab.value} 
               className={cn(
-                "flex items-center gap-2",
-                activeTab === tab.value ? 'active-tab-indicator' : 'text-muted-foreground hover:text-foreground' 
+                "flex flex-col items-center justify-center gap-1 h-auto py-2 px-1 text-xs sm:text-sm",
+                activeMainTab === tab.value ? 'active-tab-indicator' : 'text-muted-foreground hover:text-foreground' 
               )}
             >
-              {tab.value !== 'all' && <ElementIcon element={tab.value as ElementType} className="h-4 w-4" />}
+              <tab.icon className="h-5 w-5 mb-0.5" />
               {tab.label}
             </TabsTrigger>
           ))}
         </TabsList>
 
-        {tabsList.map(tab => (
-          <TabsContent key={tab.value} value={tab.value}>
-            {isLoading ? (
-                 <div className="text-center py-12"><p className="text-xl text-foreground">Loading chores...</p></div>
-            ) : sortedChores.length > 0 ? (
-              <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
-                {sortedChores.map(chore => (
-                  <ChoreCard
-                    key={chore.id}
-                    chore={chore}
-                    onToggleComplete={handleToggleComplete}
-                    onEdit={handleEditChore}
-                    onDelete={handleDeleteChore}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-xl text-muted-foreground mb-4">
-                  No {activeTab !== 'all' ? `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} ` : ''}
-                  chores found.
-                </p>
-                <Button onClick={handleAddChore} size="lg" disabled={profiles.length === 0 && !isLoading}>
-                  <PlusCircle className="mr-2 h-5 w-5" /> Add a Chore
+        <TabsContent value="tasks">
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+            <h3 className="text-2xl font-semibold font-headline text-foreground">Today's Chores</h3>
+            <div className="flex gap-2 items-center">
+              <Button variant="outline" size="icon" onClick={() => setViewMode('grid')} className={cn(viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-primary')} aria-label="Grid view">
+                <LayoutGrid className="h-5 w-5" />
+              </Button>
+              <Button variant="outline" size="icon" onClick={() => setViewMode('list')} className={cn(viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'text-primary')} aria-label="List view">
+                <List className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+
+          <Tabs value={activeElementalTab} onValueChange={(value) => setActiveElementalTab(value as ElementalTabValue)} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 mb-6 bg-secondary/70">
+              {elementalTabsList.map(tab => (
+                <TabsTrigger 
+                  key={tab.value} 
+                  value={tab.value} 
+                  className={cn(
+                    "flex items-center gap-2",
+                    activeElementalTab === tab.value ? 'active-tab-indicator' : 'text-muted-foreground hover:text-foreground' 
+                  )}
+                >
+                  {tab.value !== 'all' && <ElementIcon element={tab.value as ElementType} className="h-4 w-4" />}
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {elementalTabsList.map(tab => (
+              <TabsContent key={tab.value} value={tab.value}>
+                {isLoading ? (
+                    <div className="text-center py-12"><p className="text-xl text-foreground">Loading chores...</p></div>
+                ) : sortedChores.length > 0 ? (
+                  <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
+                    {sortedChores.map(chore => (
+                      <ChoreCard
+                        key={chore.id}
+                        chore={chore}
+                        onToggleComplete={handleToggleComplete}
+                        onEdit={handleEditChore}
+                        onDelete={handleDeleteChore}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-xl text-muted-foreground mb-4">
+                      No {activeElementalTab !== 'all' ? `${activeElementalTab.charAt(0).toUpperCase() + activeElementalTab.slice(1)} ` : ''}
+                      chores found.
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+            ))}
+          </Tabs>
+          
+          <div className="mt-8">
+            <Dialog open={isFormOpen} onOpenChange={(isOpen) => {
+              setIsFormOpen(isOpen);
+              if (!isOpen) setEditingChore(null);
+            }}>
+              <DialogTrigger asChild>
+                <Button 
+                  size="lg" 
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3 text-base" 
+                  onClick={handleAddChore} 
+                  disabled={profiles.length === 0 && !isLoading}
+                >
+                  <PlusCircle className="mr-2 h-5 w-5" /> Add New Chore
                 </Button>
+              </DialogTrigger>
+              {isFormOpen && profiles.length > 0 && (
+                <ChoreForm
+                  chore={editingChore}
+                  profiles={profiles}
+                  onSubmit={handleSubmitChoreForm}
+                  onClose={() => {
+                    setIsFormOpen(false);
+                    setEditingChore(null);
+                  }}
+                />
+              )}
+              {isFormOpen && profiles.length === 0 && !isLoading && (
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Cannot Add Chore</DialogTitle>
+                      <DialogDescription>
+                        No housemate profiles are available for assignment. Please add at least one profile before creating chores.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                          <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>OK</Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+              )}
+            </Dialog>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="schedule">
+          <Card className="mt-6">
+            <CardContent className="pt-6">
+              <div className="text-center py-12">
+                <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-xl text-muted-foreground">Schedule View Coming Soon!</p>
+                <p className="text-sm text-muted-foreground">Check back later to see your chores on a calendar.</p>
               </div>
-            )}
-          </TabsContent>
-        ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="family">
+           <Card className="mt-6">
+            <CardContent className="pt-6">
+              <div className="text-center py-12">
+                <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-xl text-muted-foreground">Family Overview Coming Soon!</p>
+                <p className="text-sm text-muted-foreground">Track chore completion and engagement across the household.</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
 }
+טרקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקקק।
