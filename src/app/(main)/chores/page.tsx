@@ -166,7 +166,7 @@ export default function ChoresPage() {
         <div className="flex-grow overflow-y-auto container mx-auto pt-8 pb-24"> {/* Added padding-bottom for fixed nav */}
           
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
-              <h3 className="text-2xl font-semibold font-headline text-foreground">Today's Chores</h3>
+              <h3 className="text-2xl font-semibold font-headline text-foreground sm:text-3xl">Today's Chores</h3>
               <div className="flex gap-2 items-center">
                 <Button variant="outline" size="icon" onClick={() => setViewMode('grid')} className={cn(viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-primary')} aria-label="Grid view">
                   <LayoutGrid className="h-5 w-5" />
@@ -184,7 +184,7 @@ export default function ChoresPage() {
                     key={tab.value}
                     value={tab.value}
                     className={cn(
-                      "flex items-center gap-2",
+                      "h-full flex items-center gap-2",
                       activeElementalTab === tab.value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
