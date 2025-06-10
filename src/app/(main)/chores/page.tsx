@@ -15,7 +15,7 @@ import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { addChore, updateChore, deleteChore as deleteChoreAction, toggleChoreComplete } from '@/app/actions/choreActions';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -38,6 +38,7 @@ const itemVariants = {
       ease: "easeOut"
     }
   }
+  // Exit animation will be handled by the 'exit' prop directly on the motion.div
 };
 
 export default function ChoresPage() {
@@ -106,6 +107,7 @@ export default function ChoresPage() {
     const result = await deleteChoreAction(choreId);
     if (result.success) {
       toast({ title: "Chore Deleted", description: "The chore has been removed." });
+      // setChores(prevChores => prevChores.filter(c => c.id !== choreId)); // Optimistic update handled by onSnapshot
     } else {
       toast({ title: "Error", description: result.error || "Could not delete chore.", variant: "destructive" });
     }
@@ -208,7 +210,7 @@ export default function ChoresPage() {
                     key={tab.value}
                     value={tab.value}
                     className={cn(
-                      "h-full flex items-center gap-2",
+                      "h-full flex items-center justify-center gap-2", // Ensure justify-center for content
                       activeElementalTab === tab.value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
@@ -229,16 +231,23 @@ export default function ChoresPage() {
                       initial="hidden"
                       animate="visible"
                     >
-                      {sortedChores.map(chore => (
-                        <motion.div key={chore.id} variants={itemVariants}>
-                          <ChoreCard
-                            chore={chore}
-                            onToggleComplete={handleToggleComplete}
-                            onEdit={handleEditChore}
-                            onDelete={handleDeleteChore}
-                          />
-                        </motion.div>
-                      ))}
+                      <AnimatePresence>
+                        {sortedChores.map(chore => (
+                          <motion.div 
+                            key={chore.id} 
+                            variants={itemVariants}
+                            layout // Animates layout changes (e.g., when items reorder)
+                            exit={{ opacity: 0, transition: { duration: 0.2 } }} // Defines the exit animation
+                          >
+                            <ChoreCard
+                              chore={chore}
+                              onToggleComplete={handleToggleComplete}
+                              onEdit={handleEditChore}
+                              onDelete={handleDeleteChore}
+                            />
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
                     </motion.div>
                   ) : (
                     <div className="text-center py-12">
@@ -309,3 +318,4 @@ export default function ChoresPage() {
     </div>
   );
 }
+
