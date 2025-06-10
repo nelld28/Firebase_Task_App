@@ -9,7 +9,9 @@ import { getProfileByIdFS } from '@/lib/firebase'; // Using this to fetch profil
 
 export async function addChore(choreData: ChoreInput): Promise<{ success: boolean; id?: string; error?: string }> {
   try {
+    console.log('Attempting to fetch profile for assignee ID:', choreData.assignedTo);
     const assigneeProfile = await getProfileByIdFS(choreData.assignedTo);
+    console.log('Fetched assignee profile:', assigneeProfile);
 
     const choreWithDetails = {
       ...choreData,
@@ -23,7 +25,7 @@ export async function addChore(choreData: ChoreInput): Promise<{ success: boolea
     revalidatePath('/chores');
     revalidatePath('/'); // For dashboard updates
     return { success: true, id: docRef.id };
-  } catch (e: any) {
+  } catch (e: any) {    console.error('Error adding chore:', e.message, 'Chore data:', choreData);
     console.error('Error adding chore: ', e);
     return { success: false, error: e.message };
   }
@@ -40,7 +42,9 @@ export async function updateChore(choreId: string, choreData: Partial<ChoreInput
     }
     
     if (choreData.assignedTo) {
+        console.log('Attempting to fetch profile for assignee ID:', choreData.assignedTo);
         const assigneeProfile = await getProfileByIdFS(choreData.assignedTo);
+        console.log('Fetched assignee profile:', assigneeProfile);
         updatePayload.assigneeName = assigneeProfile?.name || 'Unknown';
         updatePayload.assigneeAvatarUrl = assigneeProfile?.avatarUrl || 'https://placehold.co/40x40.png';
     }

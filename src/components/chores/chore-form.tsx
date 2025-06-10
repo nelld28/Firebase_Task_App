@@ -143,7 +143,7 @@ const ChoreForm: React.FC<ChoreFormProps> = ({ chore, profiles, onSubmit, onClos
             name="dueDate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Due Date</FormLabel>
+ <FormLabel>Due Date</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -165,7 +165,7 @@ const ChoreForm: React.FC<ChoreFormProps> = ({ chore, profiles, onSubmit, onClos
                       selected={calendarDate}
                       onSelect={(date) => {
                         setCalendarDate(date); 
-                        field.onChange(date ? format(date, "yyyy-MM-dd") : ""); 
+ field.onChange(date ? format(date, 'yyyy-MM-dd') : '');
                       }}
                       disabled={(dateToTest) => {
                         if (!minSelectableDate) return true; // Disable all if min date not set yet

@@ -32,6 +32,7 @@ export interface ProfileInput extends Omit<Profile, 'id' | 'createdAt' | 'chi' |
   stepsToday?: number;
   avatarUrl?: string;
 }
-export interface ChoreInput extends Omit<Chore, 'id' | 'createdAt' | 'dueDate' | 'assigneeName' | 'assigneeAvatarUrl'> {
+export interface ChoreInput extends Omit<Chore, 'id' | 'createdAt' | 'assigneeName' | 'assigneeAvatarUrl'> {
   dueDate: string; // Use string for form input, convert to Date/Timestamp in action
 }
+
