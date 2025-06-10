@@ -15,6 +15,30 @@ import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { addChore, updateChore, deleteChore as deleteChoreAction, toggleChoreComplete } from '@/app/actions/choreActions';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut"
+    }
+  }
+};
 
 export default function ChoresPage() {
   const [chores, setChores] = useState<ChoreType[]>([]);
@@ -166,7 +190,7 @@ export default function ChoresPage() {
         <div className="flex-grow overflow-y-auto container mx-auto pt-8 pb-24"> {/* Added padding-bottom for fixed nav */}
           
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
-              <h3 className="text-2xl font-semibold font-headline text-foreground sm:text-3xl">Today's Chores</h3>
+              <h3 className="text-xl sm:text-2xl font-semibold font-headline text-foreground md:text-3xl">Today's Chores</h3>
               <div className="flex gap-2 items-center">
                 <Button variant="outline" size="icon" onClick={() => setViewMode('grid')} className={cn(viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-primary')} aria-label="Grid view">
                   <LayoutGrid className="h-5 w-5" />
@@ -199,17 +223,23 @@ export default function ChoresPage() {
                   {isLoading ? (
                       <div className="text-center py-12"><p className="text-xl text-foreground">Loading chores...</p></div>
                   ) : sortedChores.length > 0 ? (
-                    <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
+                    <motion.div 
+                      className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}
+                      variants={containerVariants}
+                      initial="hidden"
+                      animate="visible"
+                    >
                       {sortedChores.map(chore => (
-                        <ChoreCard
-                          key={chore.id}
-                          chore={chore}
-                          onToggleComplete={handleToggleComplete}
-                          onEdit={handleEditChore}
-                          onDelete={handleDeleteChore}
-                        />
+                        <motion.div key={chore.id} variants={itemVariants}>
+                          <ChoreCard
+                            chore={chore}
+                            onToggleComplete={handleToggleComplete}
+                            onEdit={handleEditChore}
+                            onDelete={handleDeleteChore}
+                          />
+                        </motion.div>
                       ))}
-                    </div>
+                    </motion.div>
                   ) : (
                     <div className="text-center py-12">
                       <p className="text-xl text-muted-foreground mb-4">
