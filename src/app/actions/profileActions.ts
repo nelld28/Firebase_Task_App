@@ -12,7 +12,7 @@ export async function addProfile(profileData: ProfileInput): Promise<{ success: 
       ...profileData,
       chi: profileData.chi || 0,
       stepsToday: profileData.stepsToday || 0,
-      avatarUrl: profileData.avatarUrl || `https://placehold.co/100x100.png?text=${profileData.name.substring(0,1)}`,
+      avatarUrl: profileData.avatarUrl || `https://api.dicebear.com/8.x/lorelei/png?seed=${encodeURIComponent(profileData.name)}`,
       createdAt: serverTimestamp(),
     };
     const docRef = await addDoc(collection(db, 'profiles'), profileWithTimestamp);

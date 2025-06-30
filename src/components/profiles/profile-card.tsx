@@ -28,7 +28,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEdit }) => {
   };
   
   const elementIconColor = getElementIconColorClass(profile.element);
-  const avatar = profile.avatarUrl || `https://placehold.co/100x100.png?text=${profile.name.substring(0,1)}`;
+  const avatar = profile.avatarUrl || `https://api.dicebear.com/8.x/lorelei/png?seed=${encodeURIComponent(profile.name)}`;
 
 
   return (

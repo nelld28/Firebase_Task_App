@@ -198,12 +198,12 @@ export default function DashboardPage() {
               <CardTitle className="font-headline text-lg sm:text-xl md:text-2xl">House Overview</CardTitle>
               <CardDescription className="text-sm sm:text-base">Quick links and team stats.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 px-2 sm:px-4 md:px-6 pb-2 sm:pb-4 md:pb-6 pt-0">
+            <CardContent className="space-y-4 px-4 sm:px-6 pb-4 sm:pb-6 pt-0">
               {allProfiles.slice(0,4).map(profile => (
                 <div key={profile.id} className="flex items-center justify-between p-1.5 sm:p-2 bg-card-foreground/5 rounded-md">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <Image 
-                      src={profile.avatarUrl || `https://placehold.co/40x40.png`} 
+                      src={profile.avatarUrl || `https://api.dicebear.com/8.x/lorelei/png?seed=${encodeURIComponent(profile.name)}`} 
                       alt={profile.name} 
                       width={32} 
                       height={32} 
